@@ -1,0 +1,9 @@
+✅ 4. Comparison: join() vs sleep()
+
+| Feature                       | `join()`                          | `sleep()`                                 |
+| ----------------------------- | --------------------------------- | ----------------------------------------- |
+| Purpose                       | Wait for another thread to finish | Pause the current thread for a fixed time |
+| Wait Depends On               | Another thread's completion       | Time duration                             |
+| Releases Monitor Lock         | ❌ No                             | ❌ No                                     |
+| Throws `InterruptedException` | ✅ Yes                            | ✅ Yes                                    |
+| Common Use                    | Thread coordination               | Delay execution                           |

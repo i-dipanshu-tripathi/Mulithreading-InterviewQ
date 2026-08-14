@@ -1,0 +1,10 @@
+✅ 2 Can multiple threads call join() on the same thread?
+
+Yes.
+Example:
+
+Main Thread ----┐
+Worker-1 -------┼── join() on Thread-A
+Worker-2 -------┘
+
+All waiting threads resume once Thread-A completes.

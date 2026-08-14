@@ -1,0 +1,4 @@
+✅ 3. Is join() synchronized?
+
+Yes.
+Internally, the Thread implementation uses synchronization and wait()/notifyAll() mechanisms to coordinate thread completion.

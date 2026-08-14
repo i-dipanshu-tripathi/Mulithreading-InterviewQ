@@ -1,0 +1,96 @@
+✅ 4. Demonstrate join()
+
+4.1 Definition
+🔴 join() is a method of the Thread class.
+🔴 It causes the calling thread to wait until the thread on which join() is invoked finishes its execution.
+🔴 It is commonly used to enforce the execution order between threads.
+
+Method Signature
+🔴 public final void join() throws InterruptedException
+
+4.2 Why Do We Need join()?
+
+Suppose we have:
+
+Thread-A → Downloads a file.
+Main Thread → Reads the downloaded file.
+
+Without join():
+
+Main Thread
+│
+├── Start Download Thread
+└── Read File ❌ (Download may not be complete)
+
+This can cause errors because the file may not exist yet.
+
+With join():
+
+Main Thread
+│
+├── Start Download Thread
+├── Wait (join)
+└── Read File ✅
+
+
+4.3 Syntax
+thread.join();
+
+4.4 How join() Works Internally
+
+Suppose:
+
+t1.start();
+t1.join();
+
+Flow:
+
+Main Thread
+      │
+      ▼
+t1.start()
+      │
+      ▼
+t1.join()
+      │
+      ▼
+Main Thread BLOCKED
+      │
+      ▼
+Thread t1 Executes
+      │
+      ▼
+Thread t1 Finishes
+      │
+      ▼
+Main Thread Resumes
+
+Important:
+
+🔴 join() does not stop t1.
+🔴 It pauses the thread calling join(), which is the main thread in this example.
+
+4.5 join(long millis)
+Wait only for a specified time.
+
+thread.join(3000);
+
+Meaning:
+Wait for at most 3 seconds.
+
+If the thread finishes earlier:
+Main thread resumes immediately.
+
+If not:
+Main thread resumes after 3 seconds
+
+join(long millis, int nanos)
+thread.join(2000, 500000);
+
+Meaning:
+Wait for:
+
+2 seconds
+500,000 nanoseconds
+
+This overload is rarely used in real-world applications.
