@@ -1,0 +1,112 @@
+✅ 2. Start Multiple Threads and Observe Scheduling
+
+🔴 Thread Scheduling is the process by which the JVM decides which thread gets CPU time and when.
+🔴 The JVM uses a Thread Scheduler (which relies on the underlying Operating System scheduler) to manage thread execution.
+
+The scheduler determines:
+🔴 Which thread runs first.
+🔴 How long a thread runs.
+🔴 When a thread is paused or resumed.
+
+2.1 Why Do We Need Thread Scheduling?
+
+Imagine three threads:
+
+🔴 Download File
+🔴 Send Email
+🔴 Generate Report
+
+Only one CPU core can execute one thread at a time (per core).
+
+The scheduler decides:
+
+CPU
+ │
+ ├── Download Thread
+ ├── Email Thread
+ └── Report Thread
+
+Without scheduling:
+
+🔴 Threads would compete for CPU indefinitely.
+🔴 Some threads might never execute (starvation).
+
+The system would become inefficient.
+
+2.2 What is the Thread Scheduler?
+🔴 The Thread Scheduler is responsible for selecting the next thread to execute.
+🔴 Java does not define a specific scheduling algorithm.
+
+Scheduling behavior depends on:
+🔴 Operating System
+🔴 JVM implementation
+🔴 CPU availability
+Thread priority (as a hint)
+
+Important Interview Point:
+Java does not guarantee thread execution order. The JVM delegates scheduling to the underlying operating system.
+
+2.3 How Thread Scheduling Works
+
+Suppose we create three threads:
+
+Thread A
+Thread B
+Thread C
+
+All call:
+
+start();
+
+Flow:
+
+Create Threads
+      │
+      ▼
+start()
+      │
+      ▼
+Runnable State
+      │
+      ▼
+Thread Scheduler
+      │
+ ┌────┼────┐
+ ▼    ▼    ▼
+ A    B    C
+
+The scheduler decides which thread runs next.
+
+6. Possible Outputs
+Output 1
+Thread-A : 1
+Thread-A : 2
+Thread-B : 1
+Thread-C : 1
+Thread-B : 2
+...
+
+Output 2
+Thread-C : 1
+Thread-C : 2
+Thread-A : 1
+Thread-B : 1
+...
+
+
+2.4 Why Does the Output Change Every Time?
+
+Because:
+
+🔴 Thread scheduling is non-deterministic.
+🔴 The scheduler may switch between threads at any time.
+🔴 CPU availability changes.
+🔴 OS scheduling policies differ.
+
+Multi-core processors allow true parallel execution.
+
+2.5 What is Context Switching?
+A Context Switch occurs when the CPU stops executing one thread and starts executing another.
+
+During a context switch, the operating system saves the state (program counter, registers, stack, etc.)
+of the current thread and restores the state of the next thread.
