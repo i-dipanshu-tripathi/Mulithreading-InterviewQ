@@ -1,0 +1,170 @@
+✅ 9. Explain the Java Thread Lifecycle
+
+9.1 Definition
+🔴 The Thread Lifecycle describes the various states through which a thread passes from its creation until its termination.
+🔴 Every thread in Java moves through a predefined set of states managed by the JVM.
+🔴 Java represents these states using the Thread.State enum.
+
+9.2 Why Do We Need Thread Lifecycle?
+
+Consider a thread that:
+
+🔴 is created
+🔴 starts execution
+🔴 waits for a lock
+🔴 sleeps for some time
+🔴 resumes execution
+🔴 completes
+
+Without defining these stages, the JVM would have no structured way to manage thread execution.
+
+The lifecycle helps the JVM:
+
+🔴 Schedule threads.
+🔴 Pause and resume execution.
+🔴 Handle synchronization.
+🔴 Manage thread completion.
+🔴 Allocate CPU efficiently.
+
+9.3 Java Thread States
+
+Java defines six thread states.
+
+| State             | Description                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| **NEW**           | Thread object created but `start()` not called                                               |
+| **RUNNABLE**      | Thread is ready to run or currently running (Java combines ready and running into one state) |
+| **BLOCKED**       | Waiting to acquire a monitor lock (`synchronized`)                                           |
+| **WAITING**       | Waiting indefinitely for another thread to perform an action (`wait()`, `join()`)            |
+| **TIMED_WAITING** | Waiting for a specified time (`sleep()`, timed `join()`, timed `wait()`)                     |
+| **TERMINATED**    | Thread has completed execution or ended due to an uncaught exception                         |
+
+9.4 Complete Thread Lifecycle Diagram
+
+                     +----------------+
+                     |      NEW       |
+                     +----------------+
+                              |
+                           start()
+                              |
+                              ▼
+                     +----------------+
+                     |   RUNNABLE     |
+                     +----------------+
+                      /      |       \
+                     /       |        \
+                    /        |         \
+          Waiting for    wait()     sleep(),
+             Lock        join()     timed wait()
+             |             |             |
+             ▼             ▼             ▼
+        +----------+  +-----------+  +---------------+
+        | BLOCKED |  | WAITING  |  | TIMED_WAITING |
+        +----------+  +-----------+  +---------------+
+             |             |              |
+             | Lock        | notify()     | Time Over /
+             | Available   | notifyAll()  | interrupt()
+             ▼             ▼              ▼
+                    +----------------+
+                    |   RUNNABLE     |
+                    +----------------+
+                              |
+                         run() finishes
+                              |
+                              ▼
+                     +----------------+
+                     | TERMINATED     |
+                     +----------------+
+
+9.5 Understanding Every State
+
+🔴 NEW
+Definition:
+
+Thread object is created.
+start() has not been called.
+
+Thread t = new Thread();
+
+State:
+NEW
+
+🔴 RUNNABLE
+
+Definition:
+
+start() has been called.
+Thread is eligible to run.
+Scheduler decides when it executes.
+
+Example:
+t.start();
+
+State:
+RUNNABLE
+Interview Point: Java combines the Ready and Running states into a single state called RUNNABLE.
+
+🔴 BLOCKED
+
+Definition:
+The thread is waiting to acquire a monitor lock.
+
+Example:
+synchronized(obj){
+
+}
+
+🔴 If another thread already owns the lock:
+BLOCKED
+
+🔴 WAITING
+
+Definition:
+The thread waits indefinitely until another thread wakes it.
+
+Methods causing WAITING:
+
+wait()
+join()
+LockSupport.park()
+
+🔴 TIMED_WAITING
+
+Definition:
+The thread waits for a specified amount of time.
+
+Methods:
+
+Thread.sleep(1000);
+thread.join(5000);
+object.wait(3000);
+
+🔴 TERMINATED
+
+Definition:
+Thread execution has finished.
+
+Example:
+public void run(){
+
+}
+
+Once run() completes:
+
+TERMINATED
+A terminated thread cannot be restarted.
+
+6. State Transition Flow
+
+NEW
+ │ start()
+ ▼
+RUNNABLE
+ ├──────────────► BLOCKED
+ │◄──────────────────┘
+ ├──────────────► WAITING
+ │◄──────────────────┘
+ ├──────────────► TIMED_WAITING
+ │◄──────────────────┘
+ ▼
+TERMINATED
