@@ -1,0 +1,187 @@
+✅ 11. Demonstrate BLOCKED using synchronized
+
+11.1 Definition
+
+A thread enters the BLOCKED state when:
+
+🔴 It is trying to enter a synchronized block or method.
+🔴 Another thread already owns the monitor lock.
+
+The BLOCKED thread waits until the lock becomes available.
+
+11.2 Why Do We Need BLOCKED?
+
+Suppose two threads want to update the same bank account.
+🔴 Thread-A → Update Balance
+🔴 Thread-B → Update Balance
+
+If both execute simultaneously:
+Balance = 1000
+Thread-A → +500
+Thread-B → -200
+
+The final balance may become incorrect due to race conditions.
+
+To prevent this:
+
+synchronized(account){
+    // Update Balance
+}
+
+🔴 Only one thread can enter the synchronized block at a time.
+🔴 The other thread waits in the BLOCKED state.
+
+11.3 How Does a Thread Enter BLOCKED?
+
+Flow:
+
+Thread-A
+↓
+Acquire Lock
+↓
+Inside synchronized
+
+Thread-B
+↓
+Wants Same Lock
+↓
+BLOCKED
+
+11.4 Step-by-Step Explanation
+
+🔴 Step 1
+
+Create shared object.
+SharedResource resource = new SharedResource();
+Both threads will synchronize on the same object.
+
+🔴 Step 2
+
+Start Thread-A.
+t1.start();
+
+Scheduler picks Thread-A.
+State : RUNNABLE
+
+🔴 Step 3
+
+Thread-A enters
+public synchronized void print()
+
+Internally
+synchronized(this){
+
+}
+
+Lock owner
+Thread-A
+
+🔴 Step 4
+
+Thread-A executes
+Thread.sleep(5000);
+
+Question:
+
+Current State?
+TIMED_WAITING
+
+Notice something important.
+Although Thread-A is sleeping...
+
+It still owns the lock.
+This is extremely important.
+
+🔴 Step 5
+
+Start Thread-B.
+t2.start();
+
+Thread-B wants
+resource.print();
+
+But
+Who owns the lock?
+
+Thread-A
+
+Therefore
+Thread-B cannot enter.
+
+State
+BLOCKED
+
+🔴 Step 6
+
+Main Thread executes
+System.out.println(t2.getState());
+
+Output
+BLOCKED
+
+🔴 Step 7
+
+Five seconds complete.
+Thread-A wakes up.
+
+Prints
+Thread-A released the lock
+Exits synchronized method.
+Lock released.
+
+🔴 Step 8
+
+Scheduler chooses Thread-B.
+Thread-B acquires the lock.
+
+State RUNNABLE
+Eventually executes
+Thread-B acquired the lock
+
+
+7. Internal Flow
+
+Thread-A
+Acquire Lock
+↓
+RUNNING
+↓
+sleep()
+↓
+TIMED_WAITING
+↓
+Release Lock
+↓
+TERMINATED
+
+
+Thread-B
+
+RUNNABLE
+↓
+Acquire Lock?
+↓
+NO
+↓
+BLOCKED
+↓
+Lock Available
+↓
+RUNNABLE
+↓
+Acquire Lock
+↓
+Continue
+
+8. What Causes BLOCKED?
+
+Only one thing:
+Trying to acquire a monitor lock that another thread already owns.
+
+Example:
+synchronized(lock){
+
+}
+
+If another thread already owns lock:
+BLOCKED
