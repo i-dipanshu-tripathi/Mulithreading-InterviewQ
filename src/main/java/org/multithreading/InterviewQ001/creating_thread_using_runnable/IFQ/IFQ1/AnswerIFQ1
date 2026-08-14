@@ -1,0 +1,29 @@
+✅ Approach 2: Creating a Thread by Implementing the Runnable Interface
+
+In this approach:
+
+🔴 Runnable is a functional interface present in the java.lang package. It represents a task that can be executed by a thread.
+🔴 Create a class that implements the Runnable interface.
+🔴 Override the run() method to define the task to be executed.
+🔴 Create an object of the Runnable class. At this point, only a Runnable object is created. No thread exists.
+🔴 Create a Thread object and pass the Runnable object to its constructor. At this point, only a Thread object is created (state = NEW).
+🔴 Call start(). The JVM creates a new thread, schedules it for execution, and eventually the Thread object invokes the Runnable object's run() method.
+
+Flow:
+
+Main Thread
+    |
+    |
+creates Runnable object
+    |
+    ↓
+Creates Thread object with Runnable task
+    |
+    |
+calls start()
+    |
+    ↓
+JVM creates new Thread
+    |
+    ↓
+New thread executes run()

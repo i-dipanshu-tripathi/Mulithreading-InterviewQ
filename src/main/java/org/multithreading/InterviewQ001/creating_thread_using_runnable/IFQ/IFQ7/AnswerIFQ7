@@ -1,0 +1,66 @@
+✅2.6 Why is Runnable preferred over extending Thread?
+
+Problems solved by Runnable
+
+1. Supports Single Inheritance
+Java supports only one class inheritance.
+
+With Thread:
+class MyThread extends Thread
+
+You cannot write:
+class MyThread extends Thread, Employee
+
+With Runnable:
+
+class MyTask extends Employee implements Runnable
+✔️ Perfectly valid.
+
+2. Separation of Responsibility
+
+Runnable follows the Single Responsibility Principle.
+Runnable   → What to execute
+Thread     → How to execute
+
+Example:
+
+Downloading File
+        │
+        ▼
+    Runnable
+
+Worker Thread
+        │
+        ▼
+    Thread
+3. Better Reusability
+
+🔴 The same Runnable task can be executed by:
+
+Multiple Thread objects
+ExecutorService
+Thread Pools
+Scheduled Executors
+
+without changing the task implementation.
+
+4. Modern Java Uses Executors
+
+Modern applications rarely create threads manually.
+
+Instead:
+
+Business Logic
+        │
+        ▼
+    Runnable
+        │
+        ▼
+ExecutorService / Thread Pool / Thread
+
+This makes the design:
+
+Flexible
+Reusable
+Maintainable
+Scalable

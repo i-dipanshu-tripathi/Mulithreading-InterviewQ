@@ -1,0 +1,31 @@
+✅2.5 Can we use the same Runnable object with multiple threads?
+Yes.
+
+Example:
+Runnable task = new MyRunnable();
+
+Thread t1 = new Thread(task);
+Thread t2 = new Thread(task);
+
+t1.start();
+t2.start();
+
+Output:
+
+Thread-0 : Executing Runnable task
+Thread-1 : Executing Runnable task
+
+Why?
+🔴 Runnable only contains the task.
+🔴 It does not represent a thread.
+🔴 Therefore, multiple threads can execute the same Runnable object.
+
+Multiple threads can execute the same task.
+Flow:
+
+     Runnable Object
+            |
+    -----------------
+    |               |
+    ↓               ↓
+Thread-1        Thread-2

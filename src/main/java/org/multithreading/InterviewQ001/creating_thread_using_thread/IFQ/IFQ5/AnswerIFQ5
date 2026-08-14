@@ -1,0 +1,29 @@
+✅ 5.Can we start the same thread twice?
+
+Example:
+
+thread.start();
+thread.start();
+
+Result:
+java.lang.IllegalThreadStateException
+
+Internal Flow
+
+NEW
+ | start()
+ ▼
+RUNNABLE
+ |
+ ▼
+TERMINATED
+ | start() again
+ ▼
+IllegalThreadStateException
+
+Reason:
+
+🔴 A Thread object represents one independent execution.
+🔴 Once start() is called, the thread transitions from NEW to RUNNABLE.
+🔴 After the run() method completes, the thread enters the TERMINATED state.
+🔴 A thread cannot transition back to the NEW state, so it cannot be started again.

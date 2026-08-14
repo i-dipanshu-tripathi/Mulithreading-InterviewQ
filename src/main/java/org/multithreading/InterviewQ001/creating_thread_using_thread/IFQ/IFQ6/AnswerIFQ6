@@ -1,0 +1,53 @@
+✅ 6.Why is extending Thread not preferred?
+
+Problems
+
+1.Java supports Single Inheritance
+Since Java allows a class to extend only one class:
+
+class MyThread extends Thread ✅
+class MyThread extends Thread, Employee ❌
+
+2. Tight Coupling
+The task and the thread are tightly coupled.
+
+Task (Business Logic)
+      │
+Thread (Execution Mechanism)
+      │
+Same Class
+
+This violates the Single Responsibility Principle (SRP) because one class is responsible for both:
+🔴 What to execute (business logic)
+🔴 How to execute (thread management)
+
+3. Poor Reusability
+A class extending Thread is tied to that execution model.
+If you later want to execute the same task using:
+
+ExecutorService
+Thread Pool
+Scheduled Executor
+
+you'll need to refactor the code.
+With Runnable, the same task can be executed by any thread or executor.
+
+4. Modern Java Uses Runnable and Executors
+Modern applications rarely create threads manually.
+
+Instead:
+
+Business Logic
+   │
+   ▼
+Runnable
+   │
+   ▼
+Thread/ExecutorService/Thread Pool
+
+This separates responsibilities:
+
+What to execute → Runnable
+How to execute   → Thread / ExecutorService
+
+This design is more flexible, reusable, and maintainable.

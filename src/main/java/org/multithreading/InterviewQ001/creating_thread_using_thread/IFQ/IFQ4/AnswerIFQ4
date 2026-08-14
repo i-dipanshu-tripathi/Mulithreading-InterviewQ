@@ -1,0 +1,45 @@
+✅ 3.Thread Lifecycle
+
+After:
+thread.start();
+
+Thread moves through states:
+
+NEW
+ | start()
+ ▼
+RUNNABLE
+ | Selected by Thread Scheduler
+ ▼
+(Running - Conceptual)
+ | wait(), join(), park()
+ ▼
+WAITING
+ | notify(), notifyAll(), interrupt()
+ ▼
+RUNNABLE
+ | sleep(), wait(timeout), join(timeout)
+ ▼
+TIMED_WAITING
+ | timeout expires
+ ▼
+RUNNABLE
+ | synchronized lock unavailable
+ ▼
+BLOCKED
+ | lock acquired
+ ▼
+RUNNABLE
+ | run() completes
+ ▼
+TERMINATED
+
+Explanation of Each State
+
+🔴 NEW → The Thread object is created using new but start() has not been called yet.
+🔴 RUNNABLE → After start() is called, the thread is ready to run and is waiting for CPU time from the Thread Scheduler.
+🔴 BLOCKED → Waiting to acquire a monitor lock (synchronized).
+🔴 WAITING → Waiting indefinitely for another thread to perform an action (wait(), join(), park()).
+🔴 TIMED_WAITING → Waiting for a specified time (sleep(), wait(timeout), join(timeout)).
+🔴 RUNNING → The scheduler selects the thread, and the run() method starts executing.
+🔴 TERMINATED → The run() method completes or exits due to an uncaught exception.The thread's execution is finished and it cannot be restarted.

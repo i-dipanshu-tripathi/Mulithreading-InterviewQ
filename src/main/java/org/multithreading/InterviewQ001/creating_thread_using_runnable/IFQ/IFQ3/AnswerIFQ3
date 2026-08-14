@@ -1,0 +1,42 @@
+✅2.2 What happens internally when start() is called with Runnable?
+
+Example:
+thread.start();
+
+Internal flow:
+
+Main Thread
+      │ calls start()
+      ▼
+Thread.start()
+      │
+      ▼
+JVM invokes native method
+      │
+      ▼
+Operating System creates new Thread
+      │
+      ▼
+Thread enters RUNNABLE state
+      │
+      ▼
+Thread Scheduler selects it
+      │
+      ▼
+Thread internally calls
+task.run()
+
+Important:
+
+🔴 start() is used to start a new thread of execution.
+🔴 When we call start(), it does not directly execute the Runnable's run() method.
+🔴 It requests the JVM to create a new thread.
+🔴 The JVM asks the Operating System to create the actual thread.
+🔴 The thread enters the RUNNABLE state.
+🔴 The Thread Scheduler decides when it gets CPU time.
+🔴 The Thread object internally invokes the Runnable object's run() method.
+
+Important Point
+
+🔴 The Thread object is responsible for creating the execution path.
+🔴 The Runnable object is responsible for providing the task.

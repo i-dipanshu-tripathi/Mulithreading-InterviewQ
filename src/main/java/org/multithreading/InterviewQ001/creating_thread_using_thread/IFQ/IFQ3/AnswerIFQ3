@@ -1,0 +1,26 @@
+✅ 3.What if we call run() directly?
+
+Example: thread.run();
+
+Output:
+🔴 main thread started
+🔴 main thread ended
+
+Why ?
+🔴 run() is just a normal Java method.
+🔴 Calling run() does not create a new thread.
+🔴 The run() method executes the same thread that invoked it (usually the main thread).
+🔴 The Thread Scheduler is not involved because no new thread is created.
+🔴 Execution is synchronous, not concurrent.
+
+
+
+Internal Flow
+
+Main Thread
+     │ calls run()
+     ▼
+run() executes
+     │
+     ▼
+Main Thread continues execution

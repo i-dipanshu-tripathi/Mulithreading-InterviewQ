@@ -1,0 +1,36 @@
+✅2.4 Thread Lifecycle with Runnable
+
+After:
+
+thread.start();
+
+The Thread object moves through the lifecycle:
+
+ NEW
+  | start()
+  ▼
+ RUNNABLE
+  |   ▲
+  |   | Lock acquired
+  | BLOCKED
+  | wait(), join(), park()
+  ▼
+ WAITING
+  | notify(), notifyAll(), interrupt()
+  ▼
+ RUNNABLE
+  | sleep(), wait(timeout), join(timeout)
+  ▼
+ TIMED_WAITING
+  | timeout expires / notify()
+  ▼
+ RUNNABLE
+  | run() finishes
+  ▼
+ TERMINATED
+
+ Explanation
+
+ 🔴 The lifecycle belongs to the Thread object.
+ 🔴 A Runnable object does not have a lifecycle.
+ 🔴 Multiple Thread objects can execute the same Runnable object.

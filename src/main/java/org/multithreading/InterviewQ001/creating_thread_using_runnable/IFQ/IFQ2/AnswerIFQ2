@@ -1,0 +1,32 @@
+✅2.1 When we create a Runnable object, is a new thread created?
+
+Example:
+Runnable task = new MyRunnable();
+
+Output:
+No new thread is created
+
+Why?
+🔴 Runnable only represents the task (business logic).
+🔴 It does not represent an actual thread.
+🔴 Creating a Runnable object only allocates memory for the task.
+🔴 No execution starts until a Thread object is created and start() is invoked.
+
+At this stage:
+
+Main Thread
+      │
+      │ creates Runnable object
+      ▼
+Runnable Object Created
+      │
+      ▼
+No Thread Created
+      │
+      ▼
+No Execution
+
+A thread is created only when:
+
+Thread thread = new Thread(task);
+thread.start();

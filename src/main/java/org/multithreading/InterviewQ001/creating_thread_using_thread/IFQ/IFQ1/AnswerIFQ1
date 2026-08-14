@@ -1,0 +1,9 @@
+✅ 1.CREATION OF THREADS USING THREAD CLASS
+
+DEFINTION: - THREAD
+
+🔴 Thread is a class in the java.lang package.
+🔴 It represents an actual thread of execution.
+🔴 It is responsible for creating, scheduling, and managing a thread.
+🔴 public class Thread implements Runnable
+
