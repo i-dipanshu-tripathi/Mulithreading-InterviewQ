@@ -1,4 +1,4 @@
-package org.multithreading.INTERVIEW.InterviewQ003.thread_name_id;
+package org.multithreading.InterviewQ003.thread_name_id;
 
 public class ThreadNameAndId {
     public static void main(String[] args) {
