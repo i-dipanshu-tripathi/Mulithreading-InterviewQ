@@ -1,0 +1,10 @@
+✅ 1. What happens if you call:
+
+thread.start();
+thread.setDaemon(true);
+
+Answer:
+
+It throws:
+IllegalThreadStateException
+because a thread's daemon status cannot be changed after it has been started.

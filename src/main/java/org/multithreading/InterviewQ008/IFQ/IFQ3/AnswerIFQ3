@@ -1,0 +1,12 @@
+✅ 3. Daemon Thread vs User Thread
+
+| Feature                     | User Thread           | Daemon Thread           |
+| --------------------------- | --------------------- | ----------------------- |
+| Purpose                     | Main application work | Background support work |
+| JVM Waits Before Shutdown   | ✅ Yes                 | ❌ No                    |
+| Default Thread Type         | ✅ Yes                 | ❌ No                    |
+| Suitable for Critical Tasks | ✅ Yes                 | ❌ No                    |
+| Can End Abruptly            | ❌ No (normally waits) | ✅ Yes                   |
+| Example                     | Payment Processing    | Garbage Collector       |
+
+

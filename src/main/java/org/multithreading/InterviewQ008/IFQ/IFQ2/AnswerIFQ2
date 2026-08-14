@@ -1,0 +1,9 @@
+✅ 2. Can a daemon thread create a user thread?
+
+Answer:
+Yes, but by default a child thread inherits the daemon status of its parent.
+
+That means:
+
+Child of a daemon thread → daemon thread (unless explicitly changed before start(), where allowed).
+Child of a user thread → user thread.

@@ -1,0 +1,92 @@
+✅ 8. Daemon Thread vs User Thread
+
+8.1 Definition
+
+User Thread
+🔴 A User Thread is a normal thread that performs the main work of an application.
+🔴 The JVM waits for all user threads to finish before shutting down.
+By default, every thread you create is a User Thread.
+
+Examples:
+🔴 Main Thread
+🔴 Payment Processing Thread
+🔴 Database Thread
+🔴 File Upload Thread
+
+Daemon Thread
+
+🔴 A Daemon Thread is a background service thread.
+🔴 It supports user threads by performing auxiliary tasks.
+🔴 The JVM does not wait for daemon threads to finish.
+🔴 When all user threads complete, the JVM terminates, and any remaining daemon threads are stopped automatically.
+
+Examples:
+🔴 Garbage Collector (GC)
+🔴 JIT Compiler helper threads
+🔴 Reference Handler
+🔴 Finalizer-related background services (older JVMs)
+
+
+8.2 Why Do We Need Daemon Threads?
+
+Consider a background logging service.
+
+Application
+↓
+User Requests
+↓
+Logger Thread
+
+If the application finishes its work, should it wait forever for the logger?
+No.
+The logger is only supporting the application.
+
+So it should terminate automatically when the application ends.
+That's exactly what a daemon thread does.
+
+8.3 JVM Shutdown Rule
+
+The JVM shuts down when:
+🔴 There are no User Threads left running.
+🔴 It does not care whether daemon threads are still running.
+
+Flow:
+
+User Threads Running
+↓
+JVM Continues
+↓
+Last User Thread Finishes
+↓
+JVM Terminates
+↓
+All Daemon Threads Stop Automatically
+
+8.4 Methods Used
+
+🔴 Make a Thread Daemon
+thread.setDaemon(true);
+
+8.5 Syntax
+Thread thread = new Thread(task);
+thread.setDaemon(true);
+thread.start();
+
+
+8.6 How Daemon Threads Work Internally
+
+JVM Starts
+├── Main Thread (User)
+├── Worker Thread (User)
+└── GC Thread (Daemon)
+↓
+Main Thread Ends
+↓
+Worker Thread Ends
+↓
+Only GC Thread Remains
+↓
+JVM Stops
+↓
+GC Thread Stops Automatically
+
