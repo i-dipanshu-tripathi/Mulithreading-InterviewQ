@@ -1,0 +1,270 @@
+✅ 10. Demonstrate WAITING using wait()
+
+10.1 Definition
+wait() is a method of the Object class.
+
+It causes the current thread to:
+🔴 Release the monitor lock.
+🔴 Enter the WAITING state.
+🔴 Wait indefinitely until another thread calls notify() or notifyAll() on the same object.
+
+Method Signature
+
+public final void wait() throws InterruptedException
+
+10.2 Why Do We Need wait()?
+
+Imagine a Producer-Consumer problem.
+
+Consumer: Consume Item
+But the buffer is empty.
+Should the Consumer continuously check?
+
+Is Item Available?
+↓
+No
+↓
+Check Again
+↓
+No
+↓
+Check Again
+
+This wastes CPU (Busy Waiting).
+
+Instead :
+
+Buffer Empty
+↓
+Consumer waits()
+↓
+Producer adds item
+↓
+Producer notify()
+↓
+Consumer resumes
+
+This is much more efficient.
+
+10.3 Why is wait() in Object instead of Thread?
+
+This is one of the most asked interview questions.
+
+Incorrect Thinking
+🔴 Thread should wait.
+
+Correct Thinking
+🔴 Threads don't wait on threads.
+🔴 Threads wait on shared objects (monitors).
+
+Example:
+
+synchronized(buffer){
+    buffer.wait();
+}
+
+The thread is waiting for the buffer object's monitor.
+Since every Java object has a monitor, wait() belongs to Object.
+
+10.4 Syntax
+synchronized(lock){
+    lock.wait();
+}
+
+10.5 How wait() Works Internally
+
+Suppose:
+
+synchronized(lock){
+    lock.wait();
+}
+
+Acquire Lock
+↓
+Running
+↓
+wait()
+↓
+Release Lock
+↓
+WAITING
+↓
+notify()
+↓
+Runnable
+↓
+Re-acquire Lock
+↓
+Continue Execution
+
+Notice the important step:
+🔴 wait() releases the monitor lock.
+
+Let's understand this with the same example.
+synchronized(lock){
+    lock.notify();
+}
+
+Suppose we have two threads.
+
+🔴 Main Thread
+🔴 Child Thread (currently waiting)
+
+Before notify()
+Child Thread has executed
+
+lock.wait();
+So its state is WAITING
+and it has already released the lock.
+
+Current situation:
+
+Main Thread
+------------
+Owns lock ✅
+
+Child Thread
+------------
+WAITING
+
+Main Thread executes
+lock.notify();
+
+What happens?
+Only one thing happens:
+
+The waiting thread changes from
+WAITING
+   ↓
+RUNNABLE
+
+That's it.
+The Main Thread still owns the lock.
+
+Main Thread
+------------
+Owns lock ✅
+
+Child Thread
+------------
+RUNNABLE
+
+Notice:
+The child thread is RUNNABLE, not Running.
+
+Why doesn't it start immediately?
+Because it needs the monitor lock.
+
+But who owns the lock?
+Main Thread
+
+So the child thread must wait.
+
+Think of it like this:
+
+Main Thread
+──────────────
+Owns Lock
+──────────────
+↓
+notify()
+↓
+Child wakes up
+↓
+Child says
+"I want the lock."
+↓
+Main says
+
+"Wait...
+I'm still inside synchronized."
+
+When is the lock released?
+Here:
+
+synchronized(lock){
+    lock.notify();
+}   // <--- Lock released HERE
+
+Only after leaving the synchronized block.
+
+Then what happens?
+
+Now
+🔴 Lock becomes free.
+
+Scheduler chooses
+System.out.println("Child Thread waiting.....");
+🔴 Child Thread
+🔴 Child acquires the lock.
+
+Execution resumes exactly after
+🔴 lock.wait();
+🔴 Timeline
+🔴 Child
+
+Acquire Lock
+   │
+   ▼
+wait()
+   │
+Release Lock
+   │
+WAITING
+
+Main
+
+Acquire Lock
+   │
+   ▼
+notify()
+   │
+Still Owns Lock
+   │
+Exit synchronized
+   │
+Release Lock
+
+Child
+
+RUNNABLE
+   │
+Acquire Lock
+   │
+Continue after wait()
+Visual Representation
+Before notify()
+
+
+Lock Owner
+──────────────
+Main Thread
+──────────────
+
+Child Thread
+WAITING
+
+After
+
+notify();
+Lock Owner
+──────────────
+Main Thread
+──────────────
+
+Child Thread
+RUNNABLE
+
+❌ Cannot continue
+
+Reason:
+Main still owns lock.
+
+After
+
+}
+Lock Released
+↓
+Child acquires lock
+↓
+Continues execution
