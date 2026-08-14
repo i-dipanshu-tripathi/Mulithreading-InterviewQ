@@ -77,7 +77,7 @@ After the sleep time expires:
 🔴 Throws InterruptedException.
 🔴 Does not release any locks/monitors.
 🔴 Used for time-based waiting.
-🔴 It is non-blocking in nature.
+🔴 It is blocking in nature.
 
 7.6 Thread State During sleep()
 Running
