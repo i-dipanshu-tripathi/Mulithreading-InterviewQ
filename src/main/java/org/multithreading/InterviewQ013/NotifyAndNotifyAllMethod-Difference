@@ -1,0 +1,133 @@
+✅ 13. Difference Between notify() and notifyAll()
+
+13.1 Definition
+notify()
+🔴 notify() is a method of the Object class.
+🔴 It wakes one arbitrary thread waiting on that object's monitor.
+🔴 The awakened thread moves from WAITING to RUNNABLE.
+🔴 It does not immediately start executing.
+
+notifyAll()
+🔴 notifyAll() is also a method of the Object class.
+🔴 It wakes all threads waiting on that object's monitor.
+🔴 Every waiting thread moves from WAITING to RUNNABLE.
+🔴 They then compete to reacquire the monitor lock.
+
+13.2 Method Signatures
+🔴 public final native void notify();
+🔴 public final native void notifyAll();
+
+13.3 Why Do We Need Them?
+
+Suppose five threads are waiting.
+🔴 Thread-A
+🔴 Thread-B
+🔴 Thread-C
+🔴 Thread-D
+🔴 Thread-E
+
+A resource becomes available.
+Now we have two choices.
+
+Option 1
+Wake one thread.
+notify();
+
+Option 2
+Wake everyone.
+notifyAll();
+
+13.4 How notify() Works
+
+Suppose
+
+WAITING Queue
+↓
+A
+B
+C
+D
+
+Main thread executes
+lock.notify();
+JVM picks one arbitrary waiting thread.
+
+Example
+
+WAITING
+↓
+A
+B
+C
+D
+↓
+notify()
+↓
+B becomes RUNNABLE
+Remaining
+
+A
+C
+D
+↓
+Still WAITING
+
+13.5 How notifyAll() Works
+
+Initial
+
+WAITING
+↓
+A
+B
+C
+D
+
+Main executes
+lock.notifyAll();
+
+Now
+A
+↓
+RUNNABLE
+B
+↓
+RUNNABLE
+C
+↓
+RUNNABLE
+D
+↓
+RUNNABLE
+
+All compete for the monitor lock.
+
+13.6 Why should we use while with wait()?
+
+Example
+
+while(buffer.isEmpty()){
+    wait();
+}
+
+Reason
+
+After
+
+🔴 notifyAll();
+🔴 many threads wake up.
+🔴 Only one may proceed.
+🔴 Others should check the condition again.
+🔴 This also protects against spurious wakeups.
+
+13.7 Complete Comparison
+
+| Feature                  | `notify()`         | `notifyAll()`       |
+| ------------------------ | ------------------ | ------------------- |
+| Class                    | Object             | Object              |
+| Wakes                    | One waiting thread | All waiting threads |
+| Releases Lock            | ❌ No               | ❌ No                |
+| Scheduler Chooses Thread | Yes                | All compete         |
+| Performance              | Better             | More overhead       |
+| Safer                    | Less               | More                |
+| Risk of Missed Progress  | Higher             | Lower               |
