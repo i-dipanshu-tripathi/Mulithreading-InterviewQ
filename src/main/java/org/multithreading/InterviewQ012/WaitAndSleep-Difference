@@ -1,0 +1,152 @@
+✅ 12. Difference Between wait() and sleep()
+
+12.1 Definition
+
+wait()
+🔴 wait() is a method of the Object class.
+🔴 It is used for inter-thread communication.
+
+It causes the current thread to:
+🔴 Release the monitor lock.
+🔴 Enter the WAITING (or TIMED_WAITING for timed wait) state.
+🔴 Wait until another thread notifies it or it is interrupted.
+
+sleep()
+🔴 sleep() is a static method of the Thread class.
+🔴 It is used to pause the current thread for a specified amount of time.
+🔴 It does not release the monitor lock.
+🔴 After the timeout expires, the thread becomes RUNNABLE.
+
+12.2 Why Do We Need Them?
+
+🔴 wait() : Used when one thread depends on another.
+Example:
+
+Producer
+↓
+Produces Data
+↓
+notify()
+↓
+Consumer Continues
+
+🔴 sleep() : Used when a thread simply wants to pause.
+
+Example:
+
+Retry API
+↓
+Sleep 3 Seconds
+↓
+Retry Again
+
+12.3 Example of wait()
+Object lock = new Object();
+
+synchronized (lock) {
+    lock.wait();
+}
+
+12.4 Example of sleep()
+Thread.sleep(5000);
+
+12.5 Internal Working
+🔴 wait()
+
+Acquire Lock
+↓
+wait()
+↓
+Release Lock
+↓
+WAITING
+↓
+notify()
+↓
+RUNNABLE
+↓
+Acquire Lock Again
+↓
+Continue
+
+🔴 sleep()
+
+Running
+↓
+sleep()
+↓
+TIMED_WAITING
+↓
+Time Over
+↓
+RUNNABLE
+↓
+Continue
+
+Notice:
+No lock is released.
+
+12.6 Biggest Difference
+🔴 wait()
+
+Acquire Lock
+↓
+wait()
+↓
+Release Lock ✅
+
+🔴 sleep()
+
+Acquire Lock
+↓
+sleep()
+↓
+Keep Lock ❌
+This is the most important interview point.
+
+12.7 Example Showing the Difference
+🔴 wait()
+synchronized (lock) {
+    lock.wait();
+}
+
+What happens?
+
+Thread
+↓
+Releases Lock
+↓
+WAITING
+
+Now another thread can enter the synchronized block.
+
+sleep()
+synchronized (lock) {
+    Thread.sleep(5000);
+}
+
+Current thread: TIMED_WAITING
+
+But
+
+Still owns lock
+Other threads remain
+
+BLOCKED
+
+12.8 Complete Comparison Table
+
+| Feature                       | `wait()`                             | `sleep()`          |
+| ----------------------------- | ------------------------------------ | ------------------ |
+| Class                         | `Object`                             | `Thread`           |
+| Static                        | ❌ No                                | ✅ Yes             |
+| Releases Lock                 | ✅ Yes                               | ❌ No              |
+| Requires synchronized         | ✅ Yes                               | ❌ No              |
+| Purpose                       | Thread Communication                 | Delay Execution    |
+| State                         | `WAITING` / `TIMED_WAITING`          | `TIMED_WAITING`    |
+| Wakes Up                      | `notify()`, `notifyAll()`, interrupt | Timeout, interrupt |
+| Throws `InterruptedException` | ✅ Yes                               | ✅ Yes             |
+| Used In                       | Producer-Consumer                    | Retry, Delay       |
+
+
+
