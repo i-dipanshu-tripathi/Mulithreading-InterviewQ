@@ -1,0 +1,10 @@
+✅ 3. yield() vs sleep()
+
+| Feature                       | `yield()`                           | `sleep()`                                 |
+| ----------------------------- | ----------------------------------- | ----------------------------------------- |
+| Purpose                       | Suggest scheduler to switch threads | Pause current thread for a specified time |
+| Static Method                 | ✅ Yes                              | ✅ Yes                                    |
+| Guaranteed Delay              | ❌ No                               | ✅ Approximately yes                      |
+| Thread State                  | Runnable                             | TIMED_WAITING                             |
+| Releases Lock                 | ❌ No                                | ❌ No                                    |
+| Throws `InterruptedException` | ❌ No                                | ✅ Yes                                   |

@@ -1,0 +1,70 @@
+✅ 6. Demonstrate yield()
+
+6.1 Definition
+🔴 yield() is a static method of the Thread class.
+🔴 It is used by the currently executing thread to voluntarily give up its current CPU time slice.
+🔴 The thread moves from the Running state back to the Runnable state, allowing the scheduler to choose another runnable thread.
+
+Method Signature
+public static native void yield();
+
+Important: yield() is a hint to the scheduler, not a command.
+
+6.2 Why Do We Need yield()?
+
+Suppose two threads are running:
+
+Thread-A
+Thread-B
+
+Thread-A realizes that it has been using the CPU for a while and wants to give Thread-B a chance.
+
+It can call:
+Thread.yield();
+
+Now the scheduler may switch to another runnable thread.
+
+6.3 Syntax
+Thread.yield();
+
+6.4 How yield() Works Internally
+
+Suppose Thread-A is executing.
+
+Running (Thread-A)
+        │
+        ▼
+ Thread.yield()
+        │
+        ▼
+Runnable State
+        │
+        ▼
+Scheduler Decides
+   ┌─────────────┐
+   ▼             ▼
+Thread-A     Thread-B
+
+Key Point:
+
+The scheduler may:
+
+Continue executing Thread-A.
+Switch to Thread-B.
+Switch to Thread-C.
+
+There is no guarantee.
+
+6.5 What Happens After Calling yield()?
+
+The thread:
+
+🔴 Gives up its current time slice.
+🔴 Moves back to the Runnable state.
+🔴 Competes with other runnable threads.
+🔴 May immediately be selected again.
+🔴 It is non-blocking in nature.
+
+
+
+

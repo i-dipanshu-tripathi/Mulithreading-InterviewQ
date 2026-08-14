@@ -1,0 +1,5 @@
+✅ 2. Does yield() throw InterruptedException?
+
+Answer:
+❌ No.
+Unlike sleep() and join(), yield() does not throw InterruptedException.

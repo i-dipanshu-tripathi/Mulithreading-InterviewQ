@@ -1,0 +1,7 @@
+✅ 1. Does yield() block the thread?
+
+Answer:
+
+No.
+The thread simply moves back to the Runnable state.
+It is not blocked or put into a waiting state.

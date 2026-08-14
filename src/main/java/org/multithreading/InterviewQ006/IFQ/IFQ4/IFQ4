@@ -1,0 +1,11 @@
+✅ 4. yield() vs sleep() vs join()
+
+| Feature                       | `yield()`         | `sleep()`    | `join()`                    |
+| ----------------------------- | ----------------- | ------------ | --------------------------  |
+| Class                         | Thread            | Thread       | Thread                      |
+| Static                        | ✅ Yes             | ✅ Yes      | ❌ No                    |
+| Purpose                       | Suggest scheduler | Time delay   | Wait for thread completion  |
+| Blocks Thread                 | ❌ No              | ✅ Yes        | ✅ Yes                   |
+| Releases Lock                 | ❌ No              | ❌ No         | ❌ No                    |
+| Throws `InterruptedException` | ❌ No              | ✅ Yes        | ✅ Yes                   |
+| Guaranteed Behavior           | ❌ No              | ✅ Time-based | ✅ Thread completion     |
