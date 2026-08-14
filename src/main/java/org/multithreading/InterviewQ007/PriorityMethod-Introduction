@@ -1,0 +1,95 @@
+✅ 7. Set Thread Priority and Observe Behavior
+
+7.1 Definition
+🔴 Every Java thread has a priority.
+🔴 Priority is an integer value ranging from 1 to 10.
+🔴 It is a hint to the JVM and Operating System scheduler about the relative importance of a thread.
+🔴 The scheduler may use this information while deciding which thread to execute next.
+
+7.2 Priority Range
+
+| Constant               |  Value | Description      |
+| ---------------------- | -----: | ---------------- |
+| `Thread.MIN_PRIORITY`  |   1    | Lowest priority  |
+| `Thread.NORM_PRIORITY` |   5    | Default priority |
+| `Thread.MAX_PRIORITY`  |   10   | Highest priority |
+
+7.3 Default Priority
+Every new thread inherits the priority of the thread that creates it.
+
+Example:
+Thread t = new Thread();
+
+By default:
+Priority = 5
+
+Since the main thread starts with priority 5, threads created by it also have priority 5 unless explicitly changed.
+
+7.4 Methods Used
+
+Set Priority
+🔴 thread.setPriority(int priority);
+Get Priority
+🔴 thread.getPriority();
+
+Constants
+
+🔴 Thread.MIN_PRIORITY
+🔴 Thread.NORM_PRIORITY
+🔴 Thread.MAX_PRIORITY
+
+7.5 Syntax
+
+Thread t = new Thread(task);
+t.setPriority(Thread.MAX_PRIORITY);
+t.start();
+
+7.6 How Priority Works Internally
+
+Suppose:
+Thread-A → Priority 10
+Thread-B → Priority 5
+Thread-C → Priority 1
+
+Flow:
+
+Runnable Threads
+        │
+        ▼
+Thread Scheduler
+        │
+ ┌──────┼────────┐
+ ▼      ▼        ▼
+A(10)  B(5)    C(1)
+
+The scheduler may prefer Thread-A.
+
+But it can also execute:
+
+Thread-B
+Thread-C
+
+Priority is only a scheduling hint.
+
+7.7 Does Higher Priority Guarantee Execution First?
+❌ No.
+
+This is one of the most common interview traps.
+
+Even if:
+
+t1.setPriority(10);
+t2.setPriority(1);
+
+Output could still be:
+
+Thread-2
+Thread-1
+
+because scheduling depends on:
+
+🔴 JVM implementation
+🔴 Operating System scheduler
+🔴 CPU availability
+🔴 Thread state
+🔴 System load

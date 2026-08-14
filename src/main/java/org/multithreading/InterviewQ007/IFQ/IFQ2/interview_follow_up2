@@ -1,0 +1,8 @@
+✅ 2. What happens if we set:
+thread.setPriority(15);
+
+Answer:
+
+It throws:
+IllegalArgumentException
+because valid priorities are only 1–10.

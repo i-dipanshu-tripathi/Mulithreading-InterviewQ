@@ -1,0 +1,5 @@
+✅ 3. Does a child thread inherit its parent's priority?
+Answer:
+
+Yes.
+If the parent thread has priority 8, newly created child threads inherit 8 unless changed explicitly.

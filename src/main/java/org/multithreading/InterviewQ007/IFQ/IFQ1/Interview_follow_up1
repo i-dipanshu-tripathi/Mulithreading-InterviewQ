@@ -1,0 +1,6 @@
+✅ 1. Can we set priority after calling start()?
+
+Answer:
+
+Yes, but it is generally recommended to set the priority before starting the thread.
+Changing it afterward affects only future scheduling decisions and may have little or no visible effect.

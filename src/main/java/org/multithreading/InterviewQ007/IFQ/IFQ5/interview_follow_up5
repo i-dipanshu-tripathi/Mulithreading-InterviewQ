@@ -1,0 +1,7 @@
+✅ 5. setPriority() vs sleep()
+| Feature       | `setPriority()` | `sleep()`       |
+| ------------- | --------------- | --------------- |
+| Purpose       | Scheduler hint  | Pause execution |
+| Blocks Thread | ❌ No            | ✅ Yes           |
+| Time-Based    | ❌ No            | ✅ Yes           |
+| Releases Lock | ❌ No            | ❌ No            |

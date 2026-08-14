@@ -1,0 +1,8 @@
+✅ 4. setPriority() vs yield()
+
+| Feature   | `setPriority()`             | `yield()`                          |
+| --------- | --------------------------- | ---------------------------------- |
+| Purpose   | Suggest relative importance | Suggest giving up current CPU time |
+| Affects   | Future scheduling           | Current execution                  |
+| Guarantee | ❌ No                       | ❌ No                              |
+| Static    | ❌ No                       | ✅ Yes                             |
