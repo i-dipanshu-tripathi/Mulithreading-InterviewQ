@@ -1,0 +1,92 @@
+✅ 3. Print Thread Names and IDs
+
+3.1 Definition
+
+Every thread created by the JVM has:
+
+🔴 Thread Name → A human-readable identifier.
+🔴 Thread ID → A unique numeric identifier assigned by the JVM.
+
+These help identify which thread is executing a particular task.
+
+3.2 Why Do We Need Thread Names and IDs?
+🔴 Imagine a banking application where 100 threads process transactions simultaneously.
+
+Without thread information, logs might look like:
+
+Processing Payment...
+Payment Successful...
+Updating Balance...
+
+It's impossible to know which thread performed which operation.
+
+With thread information:
+
+Thread-1 (ID: 12) -> Processing Payment
+Thread-2 (ID: 13) -> Updating Balance
+Thread-3 (ID: 14) -> Payment Successful
+
+Now debugging becomes much easier.
+
+3.3 Important Methods
+
+| Method                   | Description                            |
+| ------------------------ | -------------------------------------- |
+| `Thread.currentThread()` | Returns the currently executing thread |
+| `getName()`              | Returns the thread name                |
+| `setName(String name)`   | Changes the thread name                |
+| `getId()`                | Returns the unique thread ID           |
+
+
+🔴 Thread.currentThread()
+Returns a reference to the currently executing thread.
+
+Syntax:
+Thread.currentThread();
+
+Example:
+Thread current = Thread.currentThread();
+
+🔴 getName()
+Returns the name of the current thread.
+
+Example:
+System.out.println(Thread.currentThread().getName());
+
+Output:
+main
+
+🔴 getId()
+Returns the unique ID assigned to the thread.
+
+Example:
+System.out.println(Thread.currentThread().getId());
+
+Output:
+1
+
+3.4 Default Thread Names
+
+When you don't specify a name:
+
+Thread t1 = new Thread();
+Thread t2 = new Thread();
+Thread t3 = new Thread();
+
+Possible names:
+
+Thread-0
+Thread-1
+Thread-2
+
+The JVM assigns default names automatically.
+
+3.5 Setting Custom Thread Names
+
+You can give meaningful names.
+
+🔴 Method 1: Constructor
+Thread t = new Thread(task, "Payment-Thread");
+
+🔴 Method 2: setName()
+t.setName("Payment-Thread");
