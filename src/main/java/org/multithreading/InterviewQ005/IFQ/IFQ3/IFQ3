@@ -1,0 +1,11 @@
+✅ 3. Why is sleep() static?
+
+Because sleep always affects the currently executing thread, regardless of which Thread object you call it on.
+
+Even though Java allows this syntax:
+thread.sleep(1000);
+
+it is equivalent to:
+Thread.sleep(1000);
+
+The currently executing thread sleeps, not the thread object you referenced.

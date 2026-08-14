@@ -1,0 +1,14 @@
+✅ 2. Does sleep() guarantee exact timing?
+
+No.
+Example:
+Thread.sleep(1000);
+
+It means:
+Sleep for at least about 1000 milliseconds.
+
+The actual resume time depends on:
+
+🔴 OS Scheduler
+🔴 CPU Load
+🔴 JVM

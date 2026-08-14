@@ -1,0 +1,9 @@
+
+✅ 5. sleep() vs wait()
+
+| Feature       | `sleep()` | `wait()`             |
+| ------------- | --------- | -------------------- |
+| Class         | Thread    | Object               |
+| Releases Lock | ❌ No     | ✅ Yes               |
+| Static        | ✅ Yes    | ❌ No                |
+| Used For      | Delay     | Thread communication |

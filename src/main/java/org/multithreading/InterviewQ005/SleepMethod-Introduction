@@ -1,0 +1,99 @@
+✅ 5. Demonstrate sleep()
+
+5.1 Definition
+🔴 sleep() is a static method of the Thread class.
+🔴 It temporarily pauses the execution of the currently executing thread for a specified amount of time.
+After the specified duration, the thread becomes eligible to run again.
+
+Method Signatures
+
+public static void sleep(long millis) throws InterruptedException
+public static void sleep(long millis, int nanos) throws InterruptedException
+
+5.2 Why Do We Need sleep()?
+
+Sometimes we want to:
+Delay execution.
+🔴 Simulate long-running operations.
+🔴 Retry an operation after some time.
+🔴 Control execution speed.
+🔴 Demonstrate thread scheduling.
+
+Example:
+
+Print 1
+Wait 1 Second
+
+Print 2
+Wait 1 Second
+
+Print 3
+Without sleep() everything executes almost instantly.
+
+5.3 Syntax
+Thread.sleep(1000);
+
+Meaning:
+Pause the current thread for approximately 1000 milliseconds (1 second).
+
+5.4 How sleep() Works Internally
+
+Suppose:
+Thread.sleep(3000);
+
+Flow:
+
+Current Thread
+      │
+      ▼
+Executing
+      │
+      ▼
+sleep(3000)
+      │
+      ▼
+TIMED_WAITING State
+      │
+      ▼
+3 Seconds Over
+      │
+      ▼
+Runnable State
+      │
+      ▼
+Scheduler Executes Again
+
+Important:
+
+After the sleep time expires:
+🔴 The thread does not immediately start running.
+🔴 It only becomes Runnable.
+🔴 The scheduler decides when it actually runs.
+
+5.5 Important Characteristics
+🔴 Static method.
+🔴 Belongs to Thread class.
+🔴 Affects only the currently executing thread.
+🔴 Throws InterruptedException.
+🔴 Does not release any locks/monitors.
+🔴 Used for time-based waiting.
+
+7.6 Thread State During sleep()
+Running
+   │
+   ▼
+sleep()
+   │
+   ▼
+TIMED_WAITING
+   │
+   ▼
+Runnable
+   │
+   ▼
+Running
+
+
+
+
+

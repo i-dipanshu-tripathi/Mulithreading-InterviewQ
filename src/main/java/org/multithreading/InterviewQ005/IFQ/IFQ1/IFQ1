@@ -1,0 +1,7 @@
+✅ 1. Does sleep() release the lock?
+
+Answer:
+❌ No.
+
+If a thread owns a monitor lock before calling sleep(), it continues to hold that lock during the sleep period.
+This is one of the biggest interview questions.
