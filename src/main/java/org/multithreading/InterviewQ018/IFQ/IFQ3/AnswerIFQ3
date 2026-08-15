@@ -1,0 +1,21 @@
+✅ 3. Which code provides better concurrency?
+Option A
+synchronized(this){
+
+}
+
+Single lock.
+
+Option B
+synchronized(customerLock){
+
+}
+synchronized(loanLock){
+
+}
+
+Multiple locks.
+
+Answer:
+
+Option B.

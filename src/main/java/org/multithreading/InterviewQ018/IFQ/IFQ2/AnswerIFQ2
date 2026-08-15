@@ -1,0 +1,6 @@
+✅ 2. What determines synchronization?
+
+The object used inside
+synchronized(...)
+
+Not the method name.

@@ -1,0 +1,19 @@
+✅ 5. Explain the differences
+
+ Same Lock vs Different Locks
+
+| Feature              | Same Lock | Different Locks |
+| -------------------- | --------- | --------------- |
+| One Thread at a Time | ✅ Yes    | ❌ No           |
+| Concurrency          | Lower     | Higher          |
+| Blocking             | More      | Less            |
+| Throughput           | Lower     | Higher          |
+
+this vs Custom Lock
+
+| Synchronization              | Monitor Used   |
+| ---------------------------- | -------------- |
+| `synchronized(this)`         | Current object |
+| `synchronized(lock)`         | `lock` object  |
+| `synchronized(customerLock)` | Customer lock  |
+| `synchronized(loanLock)`     | Loan lock      |

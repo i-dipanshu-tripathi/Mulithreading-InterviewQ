@@ -1,0 +1,9 @@
+✅ 1. Can two synchronized blocks execute simultaneously?
+Answer
+
+Depends.
+Same monitor
+❌ No
+
+Different monitors
+✅ Yes

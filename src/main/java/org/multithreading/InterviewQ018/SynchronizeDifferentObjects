@@ -1,0 +1,170 @@
+✅ 18. Synchronize on Different Objects
+
+18.1 Definition
+🔴 A synchronized block acquires the monitor of the object specified inside synchronized(...).
+🔴 If two synchronized blocks use different objects, they use different monitors, so they do not block each other.
+
+18.2 Why Do We Need Multiple Locks?
+
+Imagine a banking application.
+
+You have:
+🔴 Customer Database
+🔴 Loan Database
+
+Should updating the customer database stop another thread from updating the loan database?
+❌ No.
+
+These are completely independent resources.
+Instead of one global lock, we create two locks.
+
+Customer Lock
+Loan Lock
+
+Now both operations can execute simultaneously.
+This improves concurrency significantly.
+
+18.3 Example Without Separate Locks
+
+class Service {
+    public synchronized void updateCustomer() {
+
+    }
+
+    public synchronized void updateLoan() {
+
+    }
+}
+
+Question:
+
+Can
+
+Thread-A
+↓
+updateCustomer()
+
+and
+
+Thread-B
+↓
+updateLoan()
+
+execute simultaneously?
+❌ No.
+
+Because both methods synchronize on this Same monitor.
+
+18.4 Better Design
+
+class Service {
+    private final Object customerLock = new Object();
+    private final Object loanLock = new Object();
+}
+
+Now
+
+synchronized(customerLock){
+
+}
+
+and
+
+synchronized(loanLock){
+
+}
+
+are independent.
+
+18.5 Possible Output
+
+Thread-0 Updating Customer
+Thread-1 Updating Loan
+
+Customer Updated
+Loan Updated
+
+Notice
+Both methods execute at the same time.
+
+18.6 Why Didn't They Block?
+
+Because
+
+updateCustomer()
+↓
+customerLock
+
+and
+
+updateLoan()
+↓
+loanLock
+
+are different monitors.
+
+18.7 Memory Diagram
+Heap
+
++-------------------------+
+| Service                 |
+|-------------------------|
+| customerLock ----------+------+
+| loanLock --------------|--+   |
++------------------------|--|---+
+                         |  |
+                         ▼  ▼
+                 +---------+ +---------+
+                 |Customer | | Loan    |
+                 | Monitor | | Monitor |
+                 +---------+ +---------+
+
+Each object has its own monitor.
+
+18.8 Internal Working
+
+Thread-A
+
+Acquire customerLock
+↓
+Execute
+↓
+Release customerLock
+
+Thread-B
+
+Acquire loanLock
+↓
+Execute
+↓
+Release loanLock
+
+Different monitors.
+No waiting.
+
+18.9 What if Both Used the Same Lock?
+
+Example
+
+private final Object lock = new Object();
+synchronized(lock){
+
+}
+synchronized(lock){
+
+}
+
+Now
+
+Thread-A
+↓
+Acquire Lock
+Thread-B
+↓
+BLOCKED
+
+because
+both compete for
+Same Monitor
+
+

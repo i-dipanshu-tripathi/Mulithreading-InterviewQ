@@ -1,0 +1,2 @@
+✅ 4. Does each object have its own monitor?
+Yes. Every Java object has exactly one intrinsic monitor.
