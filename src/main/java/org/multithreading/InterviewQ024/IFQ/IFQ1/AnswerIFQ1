@@ -1,0 +1,5 @@
+Q1. Does every object have a monitor?
+
+✅ Yes.
+
+Every Java object has exactly one intrinsic monitor.

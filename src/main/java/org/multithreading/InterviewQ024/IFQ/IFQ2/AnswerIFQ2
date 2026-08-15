@@ -1,0 +1,5 @@
+Q2. Can two threads own the same monitor?
+
+❌ No.
+
+Only one owner exists.

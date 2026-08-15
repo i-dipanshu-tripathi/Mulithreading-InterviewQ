@@ -1,0 +1,9 @@
+Q10. Can one monitor protect multiple synchronized methods?
+
+Yes. Example
+
+public synchronized void deposit() { }
+public synchronized void withdraw() { }
+
+Both use
+this Monitor

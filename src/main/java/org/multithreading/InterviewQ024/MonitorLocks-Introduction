@@ -1,0 +1,250 @@
+✅ 24.Monitor Locks
+
+24.1 Definition
+
+A Monitor is an internal synchronization mechanism provided by the JVM.
+
+It ensures that:
+🔴 Only one thread can execute synchronized code protected by that monitor at a time.
+🔴 Other threads wait until the monitor becomes available.
+
+Think of a monitor as the lock (intrinsic lock) attached to every Java object.
+
+24.2 Does Every Object Have a Monitor?
+
+YES.
+Every object created in Java automatically has an associated monitor.
+
+Example
+
+Object obj = new Object();
+String s = "Hello";
+Integer x = 10;
+Counter counter = new Counter();
+
+Each object has its own monitor.
+
+Object A
+   ↓
+Monitor A
+
+Object B
+   ↓
+Monitor B
+
+Object C
+   ↓
+Monitor C
+
+This is why we can write
+
+synchronized(obj) { }
+synchronized(counter) { }
+synchronized(this) { }
+
+
+24.3 Why Do We Need a Monitor?
+
+Suppose two threads execute
+count++;
+
+simultaneously.
+Without a monitor
+
+Thread-A
+↓
+count++
+↑
+Thread-B
+
+Both modify the same data simultaneously.
+
+Result
+
+❌ Race Condition
+With a monitor
+
+Monitor
+↓
+Thread-A
+↓
+Critical Section
+↓
+Thread-B Waits
+
+Only one thread enters.
+
+24.4 Internal Working of synchronized
+
+Suppose
+
+synchronized(lock){
+    count++;
+}
+
+Internally
+
+Acquire Monitor
+↓
+Execute Code
+↓
+Release Monitor
+
+The JVM performs these steps automatically.
+
+24.5 Example
+
+class Counter {
+    private int count = 0;
+    public void increment(){
+        synchronized(this){
+            count++;
+        }
+    }
+}
+
+Question
+
+Which monitor is acquired?
+Answer Counter Object's Monitor
+
+
+24.6 Monitor Ownership
+
+A monitor always has at most one owner.
+
+Example
+
+Counter Monitor
+↓
+Owner
+↓
+Thread-A
+
+Question
+
+What happens if Thread-B arrives?
+
+Answer
+BLOCKED
+because Thread-A owns the monitor.
+
+24.7 Entry Set
+
+This is a very common interview question.
+
+Suppose
+
+Thread-A
+↓
+Acquire Monitor
+
+Now
+
+Thread-B
+Thread-C
+Thread-D
+all execute
+
+synchronized(lock)
+
+Can they enter?
+
+No.
+They wait here:
+
+Monitor
+  ▲
+  │
+Entry Set
+
+Thread-B
+Thread-C
+Thread-D
+
+The Entry Set contains threads waiting to acquire the monitor.
+
+24.8 Wait Set
+
+Another common interview topic.
+
+Suppose Thread-A executes
+
+lock.wait();
+
+What happens?
+
+Releases the monitor.
+Moves to the Wait Set.
+
+Monitor
+↓
+Wait Set
+↓
+Thread-A
+
+Notice
+
+It is not in the Entry Set anymore.
+
+24.9 Entry Set vs Wait Set
+
+Entry Set
+Waiting because
+Lock unavailable.
+
+Cause
+
+synchronized(lock)
+
+Wait Set
+Waiting because
+wait();
+
+was called.
+These are completely different.
+
+10. How notify() Works
+
+Suppose
+
+Wait Set
+↓
+Thread-A
+
+Thread-B
+
+Current owner executes
+lock.notify();
+
+JVM moves one thread
+
+Wait Set
+↓
+Entry Set / Runnable to compete for the monitor
+
+The notified thread is eligible to reacquire the monitor, but it does not own it yet.
+
+Interview Note: Conceptually, the thread leaves the Wait Set. It must compete to reacquire the monitor before continuing. Different JVM implementations may describe this transition slightly differently internally, but the key idea is that notify() does not immediately give the thread the lock.
+
+11. Monitor Lifecycle
+
+Acquire Monitor
+↓
+Execute
+↓
+wait()
+↓
+Release Monitor
+↓
+Wait Set
+↓
+notify()
+↓
+Compete For Monitor
+↓
+Acquire Monitor Again
+↓
+Continue
+↓
+Release Monitor

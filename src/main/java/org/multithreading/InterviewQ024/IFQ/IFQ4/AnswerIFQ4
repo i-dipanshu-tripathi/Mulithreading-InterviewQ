@@ -1,0 +1,7 @@
+Q4. What is the Wait Set?
+
+Threads that called
+
+wait();
+
+and released the monitor.

@@ -1,0 +1,16 @@
+7.1 Entry Set vs Wait Set
+
+| Feature      | Entry Set         | Wait Set                                     |
+| ------------ | ----------------- | -------------------------------------------- |
+| Waiting For  | Monitor           | `notify()` / `notifyAll()` (or interruption) |
+| Cause        | `synchronized`    | `wait()`                                     |
+| Thread State | Usually `BLOCKED` | `WAITING` or `TIMED_WAITING`                 |
+| Owns Lock    | ❌ No              | ❌ No                                         |
+
+7.2 Monitor vs Lock
+
+| Monitor                         | Lock                                     |
+| ------------------------------- | ---------------------------------------- |
+| JVM intrinsic mechanism         | General synchronization concept          |
+| Used by `synchronized`          | Can refer to intrinsic or explicit locks |
+| Automatically acquired/released | Explicit locks require manual management |
