@@ -1,0 +1,77 @@
+✅ 14. What Happens if wait() is Called Outside a Synchronized Block?
+
+14.1 Short Answer
+
+❌ No.
+Calling wait() outside a synchronized block or synchronized method throws:
+IllegalMonitorStateException
+This is an unchecked exception (extends RuntimeException).
+
+14.2 Why Does This Happen?
+
+Remember one golden rule:
+🔴 A thread can call wait(), notify(), or notifyAll() only if it currently owns that object's monitor (lock).
+🔴 If it doesn't own the monitor,the JVM throws IllegalMonitorStateException
+
+14.3 Incorrect Example
+
+class Shared {
+    void work() throws InterruptedException {
+        wait();
+    }
+}
+
+14.4 What Happens?
+
+Suppose
+
+Shared shared = new Shared();
+shared.work();
+
+Execution
+
+work()
+↓
+wait()
+↓
+Thread owns monitor?
+↓
+NO
+↓
+IllegalMonitorStateException
+
+14.5 Runtime Exception
+
+Exception in thread "main"
+java.lang.IllegalMonitorStateException
+
+14.6 Why Doesn't the Thread Own the Lock?
+
+Because
+
+void work(){
+    wait();
+}
+
+contains no synchronization.
+
+The thread entered the method like any normal method.
+
+It never acquired
+shared's monitor
+
+So
+
+wait();
+is illegal.
+
+14.7 Summary Table
+
+| Code                                 | Valid? | Reason               |
+| ------------------------------------ | ------ | -------------------- |
+| `wait()` outside synchronized        | ❌      | No monitor ownership |
+| `notify()` outside synchronized      | ❌      | No monitor ownership |
+| `notifyAll()` outside synchronized   | ❌      | No monitor ownership |
+| `synchronized(lock){ lock.wait(); }` | ✅      | Same monitor         |
+| `synchronized(this){ wait(); }`      | ✅      | Same monitor         |
+| `synchronized(this){ lock.wait(); }` | ❌      | Different monitor    |
