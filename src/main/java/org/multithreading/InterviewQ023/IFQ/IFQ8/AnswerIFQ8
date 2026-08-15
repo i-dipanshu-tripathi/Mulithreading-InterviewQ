@@ -1,0 +1,24 @@
+✅ 8.1 Mutual Exclusion vs Synchronization
+
+| Feature                 | **Mutual Exclusion (Mutex)**                                                                            | **Synchronization**                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Meaning**             | A concurrency principle that ensures **only one thread accesses a critical section/resource at a time** | A broader concept used to **coordinate the execution and interaction of multiple threads**                             |
+| **Primary Goal**        | Prevent **race conditions** and protect shared resources                                                | Ensure threads work together in the **correct order and manner**                                                       |
+| **Focus**               | **Exclusive access**                                                                                    | **Coordination + ordering + safe access**                                                                              |
+| **Example**             | Only one thread can update a shared counter at a time                                                   | One thread waits until another thread produces data                                                                    |
+| **Java Implementation** | `synchronized`, `ReentrantLock`, `ReadWriteLock`, etc.                                                  | `synchronized`, `wait()/notify()/notifyAll()`, `CountDownLatch`, `Semaphore`, `CyclicBarrier`, `ExecutorService`, etc. |
+| **Relationship**        | Mutual exclusion can be **one part of synchronization**                                                 | Synchronization can include mutual exclusion, but is **broader**                                                       |
+
+✅ 8.2 Mutual Exclusion vs Race Condition
+
+| Feature             | **Mutual Exclusion**                                              | **Race Condition**                                                                                             |
+| ------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Meaning**         | Ensures only **one thread at a time** accesses a critical section | Occurs when multiple threads access/modify shared data concurrently and the result depends on execution timing |
+| **Shared Data**     | Properly protected                                                | Improperly protected                                                                                           |
+| **Thread Safety**   | ✅ Helps ensure thread safety                                      | ❌ Can cause thread-safety issues                                                                               |
+| **Data Corruption** | ❌ Prevents conflicting updates                                    | ⚠️ May cause incorrect or inconsistent data                                                                    |
+| **Execution**       | Threads access the critical section **one at a time**             | Threads may access the critical section **simultaneously**                                                     |
+| **Synchronization** | Uses synchronization/locking mechanisms                           | Usually occurs when required synchronization is missing or incorrectly implemented                             |
+| **Example**         | `synchronized`, `ReentrantLock`                                   | Two threads simultaneously incrementing the same counter                                                       |
+| **Result**          | Predictable and consistent                                        | Potentially unpredictable and incorrect                                                                        |
+

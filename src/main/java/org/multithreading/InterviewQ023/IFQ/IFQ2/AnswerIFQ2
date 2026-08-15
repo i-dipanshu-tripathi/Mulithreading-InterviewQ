@@ -1,0 +1,7 @@
+✅ 2. How is Mutual Exclusion achieved in Java?
+
+Using
+
+synchronized
+ReentrantLock
+Other locking mechanisms

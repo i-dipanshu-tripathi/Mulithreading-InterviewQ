@@ -1,0 +1,184 @@
+✅ 23. Demonstrate Mutual Exclusion
+
+23.1 Definition
+
+Mutual Exclusion (Mutex) is a synchronization principle that ensures:
+Only one thread can execute a critical section at a time.
+
+If one thread is executing the critical section,
+all other threads trying to enter the same critical section must wait.
+
+23.2 What is a Critical Section?
+
+A Critical Section is the part of the code that accesses shared mutable data.
+
+Example
+count++;
+or
+balance -= amount;
+or
+inventory--;
+
+If multiple threads execute these simultaneously,
+data corruption may occur.
+
+Therefore,
+we protect the critical section.
+
+23.3 Real-Life Analogy
+
+Imagine there is only one bathroom.
+
+Person-A
+↓
+Bathroom
+
+Now
+
+Person-B
+↓
+Bathroom
+
+Can Person-B enter?
+
+❌ No.
+He waits outside.
+
+Only after
+
+Person-A Leaves
+↓
+Person-B Enters
+
+This is exactly Mutual Exclusion.
+The bathroom is like the monitor lock.
+
+23.4 Why Do We Need Mutual Exclusion?
+
+Suppose
+Account Balance = ₹10000
+
+Two threads
+Thread-A Withdraw ₹3000
+Thread-B Withdraw ₹4000
+
+Without mutual exclusion,
+both may read
+
+₹10000
+
+leading to incorrect results.
+With mutual exclusion,
+only one withdrawal happens at a time.
+
+23.5 Example
+
+class BankAccount {
+    private int balance = 1000;
+    public synchronized void withdraw(int amount) {
+        System.out.println(Thread.currentThread().getName()+ " entered");
+
+        if(balance >= amount){
+            try {
+                Thread.sleep(3000);
+            } catch(Exception e){}
+
+            balance -= amount;
+            System.out.println(Thread.currentThread().getName()+ " withdrew " + amount);
+        }
+
+        System.out.println(Thread.currentThread().getName()+ " leaving");
+    }
+}
+
+Main Class
+
+public class Main {
+    public static void main(String[] args) {
+
+        BankAccount account = new BankAccount();
+        Thread t1 = new Thread(() -> account.withdraw(500),"Thread-A");
+        Thread t2 = new Thread(() -> account.withdraw(500),"Thread-B");
+
+        t1.start();
+        t2.start();
+    }
+
+}
+
+
+23.6 Possible Output
+
+Thread-A entered
+Thread-A withdrew 500
+Thread-A leaving
+
+Thread-B entered
+Thread-B withdrew 500
+Thread-B leaving
+
+Notice
+
+Thread-B never entered while Thread-A was inside.
+
+22.7 Internal Working
+
+Initially
+
+Monitor
+↓
+Free
+
+Thread-A
+
+Calls
+withdraw();
+Acquires monitor.
+
+Monitor
+↓
+Owned by Thread-A
+
+Thread-B
+
+Calls
+withdraw();
+
+Question
+
+Can it enter?
+❌ No.
+
+State
+
+BLOCKED
+Thread-A
+
+Finishes execution.
+Releases monitor.
+
+Monitor
+↓
+
+Free
+Thread-B
+
+Acquires monitor.
+Executes.
+
+22.8. How Does synchronized Achieve Mutual Exclusion?
+
+When a thread enters
+
+synchronized(lock){
+
+}
+
+the JVM
+
+Acquires the monitor.
+Marks it as owned.
+Blocks every other thread trying to acquire the same monitor.
+Releases the monitor when leaving the synchronized block.
+
+Only one owner exists at any point.

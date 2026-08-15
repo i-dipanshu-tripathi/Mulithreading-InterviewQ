@@ -1,0 +1,9 @@
+✅ 4. Can two threads execute the same synchronized block simultaneously?
+
+Depends.
+
+Same monitor
+❌ No.
+
+Different monitors
+✅ Yes.

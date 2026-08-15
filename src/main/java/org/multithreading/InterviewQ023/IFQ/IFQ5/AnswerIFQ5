@@ -1,0 +1,5 @@
+✅ 5. What happens to other threads?
+
+They enter
+BLOCKED
+until the monitor becomes available.

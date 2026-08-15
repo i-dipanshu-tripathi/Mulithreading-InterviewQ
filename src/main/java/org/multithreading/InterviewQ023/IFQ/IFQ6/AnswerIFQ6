@@ -1,0 +1,9 @@
+Q6. Is Mutual Exclusion the same as Thread Safety?
+
+❌ No.
+Mutual Exclusion
+
+A mechanism.
+Thread Safety
+A property of correctly behaving concurrent code.
+Mutual exclusion is one way to achieve thread safety.

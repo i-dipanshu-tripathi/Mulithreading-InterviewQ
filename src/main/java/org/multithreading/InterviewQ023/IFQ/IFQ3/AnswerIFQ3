@@ -1,0 +1,4 @@
+✅ 3. Does volatile provide Mutual Exclusion?
+
+❌ No.
+It only provides visibility.
