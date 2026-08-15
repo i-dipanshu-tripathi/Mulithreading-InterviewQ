@@ -1,0 +1,2 @@
+✅  2. Can normal code execute while another thread is inside the synchronized block?
+Yes. Only the synchronized block is protected.

@@ -1,0 +1,145 @@
+✅ 17. Synchronize a Block
+
+17.1 Definition
+
+🔴 A synchronized block synchronizes only a specific section of code instead of the entire method.
+🔴 Only one thread at a time can execute that block for the specified monitor object.
+
+17.2 Syntax:
+
+synchronized(lockObject) {
+    // Critical Section
+}
+
+17.3 Why Do We Need Synchronized Blocks?
+
+Suppose you have this method:
+
+public synchronized void processOrder() {
+    validateOrder();
+    updateDatabase();
+    sendEmail();
+}
+
+Question:
+
+🔴 Do all three operations need synchronization?
+validateOrder()      ❌ No
+updateDatabase()     ✅ Yes
+sendEmail()          ❌ No
+
+Synchronizing the entire method unnecessarily blocks other threads.
+
+Instead:
+
+public void processOrder() {
+    validateOrder();
+    synchronized(this) {
+        updateDatabase();
+    }
+    sendEmail();
+}
+
+Now only the critical section is protected.
+
+17.4 Syntax
+
+synchronized(object){
+    // Critical Section
+}
+
+17.5. How It Works Internally
+
+Suppose
+
+synchronized(lock){
+    count++;
+}
+
+Flow
+
+Acquire Lock
+↓
+Execute Critical Section
+↓
+Release Lock
+
+Everything outside the block executes normally without acquiring the monitor.
+
+17.6 Possible Output
+
+Thread-A Doing Some Work
+Thread-B Doing Some Work
+
+Thread-A Count = 1
+Thread-A Finished
+
+Thread-B Count = 2
+Thread-B Finished
+
+Thread-A Doing Some Work
+Thread-A Count = 3
+
+Notice:
+
+The "Doing Some Work" messages may interleave because they are outside the synchronized block.
+But the increment operation remains thread-safe.
+
+17.7 Internal Flow
+
+Thread-A
+
+Normal Code
+↓
+Acquire Lock
+↓
+Critical Section
+↓
+Release Lock
+↓
+Normal Code
+
+Thread-B
+
+Normal Code
+↓
+BLOCKED
+↓
+Acquire Lock
+↓
+Critical Section
+↓
+Release Lock
+
+17.8 Why Use Synchronized Block Instead of Method?
+
+Suppose
+
+public synchronized void process() {
+    calculate();
+    save();
+    print();
+}
+
+Entire method locked.
+
+Even
+calculate();
+which doesn't need synchronization.
+
+Instead
+
+public void process() {
+    calculate();
+    synchronized(this){
+        save();
+    }
+    print();
+}
+
+Only
+save();
+is protected.
+This improves concurrency.
+
+

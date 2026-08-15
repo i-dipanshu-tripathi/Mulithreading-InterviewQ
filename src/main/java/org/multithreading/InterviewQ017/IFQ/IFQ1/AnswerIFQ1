@@ -1,0 +1,4 @@
+✅ 1. Why prefer synchronized blocks over synchronized methods?
+
+Answer:
+Because they synchronize only the critical section, reducing lock contention and improving concurrency.

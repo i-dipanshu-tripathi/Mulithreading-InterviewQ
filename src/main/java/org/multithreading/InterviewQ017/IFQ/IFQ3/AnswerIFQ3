@@ -1,0 +1,13 @@
+✅ 3. What object gets locked here?
+
+synchronized(this){
+
+}
+
+Answer : Current Object
+
+synchronized(lock){
+
+}
+
+Answer : lock

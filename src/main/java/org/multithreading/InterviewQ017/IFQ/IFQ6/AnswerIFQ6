@@ -1,0 +1,8 @@
+✅ 6. Synchronized Method vs Synchronized Block
+
+| Feature                     | Synchronized Method    | Synchronized Block      |
+| --------------------------- | ---------------------- | ----------------------- |
+| Locks Entire Method         | ✅ Yes                 | ❌ No                   |
+| Locks Only Critical Section | ❌ No                  | ✅ Yes                  |
+| Performance                 | Lower under contention | Better under contention |
+| Flexibility                 | Less                   | More                    |

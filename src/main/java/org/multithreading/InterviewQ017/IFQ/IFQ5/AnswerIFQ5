@@ -1,0 +1,2 @@
+✅ 6. Does leaving the synchronized block release the lock?
+Yes. Immediately after the closing brace (}), the JVM releases the monitor.
