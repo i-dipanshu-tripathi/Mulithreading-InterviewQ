@@ -1,0 +1,9 @@
+✅ 3. Is public synchronized void method()
+
+same as
+
+synchronized(this){
+
+}
+
+Yes. For instance methods, they are functionally equivalent.

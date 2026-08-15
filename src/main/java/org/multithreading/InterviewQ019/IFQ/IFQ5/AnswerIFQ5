@@ -1,0 +1,5 @@
+✅ 5. Why do many developers avoid synchronized(this)?
+
+Because outside code can also synchronize on the same object,
+increasing lock contention and making behavior harder to control.
+

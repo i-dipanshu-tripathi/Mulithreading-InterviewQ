@@ -1,0 +1,204 @@
+19. Synchronize on this
+
+19.1 Definition
+
+When you write
+
+synchronized(this) {
+
+}
+
+🔴 the thread acquires the monitor (intrinsic lock) of the current object (this).
+🔴 Only one thread at a time can execute any code synchronized on the same object instance.
+
+19.2 What is this?
+
+Before understanding synchronization, remember what this means.
+Example:
+
+class Employee {
+    void print() {
+        System.out.println(this);
+    }
+}
+
+Suppose
+Employee e1 = new Employee();
+Employee e2 = new Employee();
+
+Then
+e1.print();
+prints Employee@6d06d69c
+
+while
+e2.print();
+prints Employee@7852e922
+
+Each object has its own this reference.
+
+19.3 Why Synchronize on this?
+
+Suppose an object has shared data.
+
+class Counter {
+    private int count;
+}
+
+Every thread modifying
+
+count
+must coordinate.
+So we lock the object itself.
+
+synchronized(this){
+    count++;
+}
+
+Now only one thread can modify
+count at time for that Counter instance.
+
+19.4 Internal Working
+
+Suppose Thread-A enters
+counter.increment();
+
+Execution
+
+Acquire Monitor(counter)
+↓
+Execute
+↓
+Release Monitor(counter)
+
+Meanwhile Thread-B
+
+Acquire Monitor(counter)
+↓
+Already Locked
+↓
+BLOCKED
+
+19.5. Memory Diagram
+Heap
+
++-------------------+
+| Counter Object    |
+|-------------------|
+| count = 5         |
+| Monitor           |
++-------------------+
+
+Thread-A
+Owns Counter Monitor
+
+Thread-B
+BLOCKED
+
+19.6. Why Does It Work?
+
+Because
+
+synchronized(this)
+means Lock this object's monitor.
+
+Every object has exactly one monitor.
+
+19.7. Equivalent Code
+
+This
+
+public synchronized void increment(){
+
+}
+
+is equivalent to
+
+public void increment(){
+    synchronized(this){
+
+    }
+}
+
+This is one of the most asked interview questions.
+
+19.8. Two Objects Example
+
+Suppose
+
+Counter c1 = new Counter();
+Counter c2 = new Counter();
+
+Thread-A
+c1.increment();
+
+Thread-B
+c2.increment();
+
+Question
+
+Will they block each other?
+
+No.
+Because
+
+Monitor(c1)
+≠
+Monitor(c2)
+
+Different objects.
+Different monitors.
+
+19.9 Why synchronized(this) Can Be Risky
+
+Example
+
+Library Code
+
+class Counter {
+    public void increment(){
+        synchronized(this){
+
+        }
+    }
+}
+
+Application Code
+
+synchronized(counter){
+    // Long running operation
+}
+
+Now
+counter.increment();
+is blocked.
+
+The library cannot control who synchronizes on its object.
+
+19.10 Better Design
+
+Instead
+private final Object lock = new Object();
+
+Then
+
+synchronized(lock){
+
+}
+
+Now nobody outside the class can accidentally lock your internal monitor.
+This is why many production systems prefer private lock objects.
+
+
+19.11 synchronized(this) vs synchronized(lock)
+
+| Feature                      | `synchronized(this)` | `synchronized(lock)` |
+| ---------------------------- | -------------------- | -------------------- |
+| Lock Object                  | Current object       | Custom lock object   |
+| Accessible Outside Class     | ✅ Yes                | ❌ No (if private)    |
+| Better Encapsulation         | ❌ No                 | ✅ Yes                |
+| Preferred in Enterprise Code | ❌ Usually No         | ✅ Yes                |
+
+
+
+
+

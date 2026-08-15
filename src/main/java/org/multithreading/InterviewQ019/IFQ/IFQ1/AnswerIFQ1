@@ -1,0 +1,7 @@
+✅ 1.1 What does this refer to?
+Current object.
+
+✅ 1.2 What monitor is acquired?
+synchronized(this)
+
+Answer Current object's monitor.

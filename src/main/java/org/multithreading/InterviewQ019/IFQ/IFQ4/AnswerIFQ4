@@ -1,0 +1,9 @@
+✅ 4. Can another thread synchronize on the same object?
+
+Yes.
+
+synchronized(counter){
+
+}
+
+uses exactly the same monitor.
