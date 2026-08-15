@@ -1,0 +1,2 @@
+Q6. Does synchronized release the lock if an exception occurs?
+🔴 Yes. When execution exits the synchronized block or method—whether normally or because of an exception—the JVM releases the monitor.

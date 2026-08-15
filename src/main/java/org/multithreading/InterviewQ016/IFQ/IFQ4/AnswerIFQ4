@@ -1,0 +1,3 @@
+✅ 4. Does synchronization make local variables thread-safe?
+🔴 Local variables are already thread-confined because each thread has its own stack.
+🔴 Synchronization is primarily used to protect shared mutable state.

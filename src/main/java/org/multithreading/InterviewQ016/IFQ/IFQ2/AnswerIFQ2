@@ -1,0 +1,4 @@
+✅ 2. Can two threads execute the same synchronized method on the same object?
+
+❌ No.
+Only one thread can hold that object's monitor.

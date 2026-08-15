@@ -1,0 +1,2 @@
+✅ 3. Can two threads execute the same synchronized method on different objects?
+Yes. Different objects have different monitors.

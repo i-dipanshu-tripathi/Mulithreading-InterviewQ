@@ -1,0 +1,4 @@
+✅ 1. What does a synchronized method lock?
+
+Answer
+For an instance synchronized method, it locks the current object (this).

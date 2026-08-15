@@ -1,0 +1,4 @@
+✅  5. Is synchronization reentrant?
+Yes. If a thread already owns an object's monitor, it can enter another synchronized method/block guarded by the same monitor without deadlocking itself.
+
+We'll study Reentrant Locks in detail later.

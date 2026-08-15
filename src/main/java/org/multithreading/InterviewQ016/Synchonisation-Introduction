@@ -1,0 +1,231 @@
+✅ 16. Synchronize a Method
+
+16.1 Definition
+🔴 A synchronized method ensures that only one thread at a time can execute that method for a particular object instance.
+
+When a thread enters a synchronized instance method:
+
+🔴 It acquires the monitor lock (intrinsic lock) of the current object (this).
+🔴 Other threads trying to enter any synchronized instance method on the same object must wait.
+
+16.2 Why Do We Need Synchronized Methods?
+
+Imagine a bank account.
+
+Initial balance:
+1000
+
+Two threads execute simultaneously:
+Thread-A → Withdraw 500
+Thread-B → Withdraw 700
+
+Without synchronization:
+Both threads may read the balance as 1000 before either updates it.
+
+Possible incorrect result:
+Final Balance = 500
+or
+Final Balance = 300
+
+depending on timing.
+This is a Race Condition.
+
+public synchronized void withdraw(int amount) {
+    ...
+}
+ensures only one thread updates the balance at a time.
+
+16.3 How It Works Internally
+
+Many people think synchronized is a keyword that magically makes code thread-safe.
+Internally, the JVM treats
+
+public synchronized void print() {
+
+}
+
+approximately as:
+
+public void print() {
+    synchronized(this) {
+        // Method Body
+    }
+}
+
+Interview Point:
+A synchronized instance method locks this.
+
+16.4 Step-by-Step Working
+
+Suppose
+count = 0
+
+Step 1
+
+Thread-A executes
+counter.increment();
+
+Thread-A acquires
+counter monitor
+
+Step 2
+
+Thread-B also calls
+counter.increment();
+
+Question:
+
+Can it enter?
+❌ No.
+
+State : BLOCKED
+because Thread-A owns the monitor.
+
+Step 3
+
+Thread-A executes
+count++;
+
+Result
+count = 1
+
+Step 4
+
+Thread-A exits the synchronized method.
+Monitor released.
+
+Step 5
+
+Scheduler chooses Thread-B.
+Thread-B acquires monitor.
+
+Executes
+count++;
+
+Result
+count = 2
+
+16.5. Internal Flow
+
+Thread-A
+
+Acquire Monitor
+↓
+Execute Method
+↓
+Release Monitor
+
+
+Thread-B
+
+Wants Monitor
+↓
+BLOCKED
+↓
+Monitor Available
+↓
+Acquire Monitor
+↓
+Execute
+
+16.6 Step-by-Step Working
+
+Suppose
+count = 0
+
+Step 1
+
+Thread-A executes
+counter.increment();
+
+Thread-A acquires
+counter monitor
+
+Step 2
+
+Thread-B also calls
+counter.increment();
+
+Question:
+
+Can it enter?
+❌ No.
+
+State : BLOCKED
+because Thread-A owns the monitor.
+
+Step 3
+
+Thread-A executes
+count++;
+
+Result
+count = 1
+
+Step 4
+Thread-A exits the synchronized method.
+Monitor released.
+
+Step 5
+
+Scheduler chooses Thread-B.
+Thread-B acquires monitor.
+
+Executes
+count++;
+
+Result
+count = 2
+
+16.7 Internal Flow
+
+Thread-A
+
+Acquire Monitor
+↓
+Execute Method
+↓
+Release Monitor
+
+Thread-B
+
+Wants Monitor
+↓
+BLOCKED
+↓
+Monitor Available
+↓
+Acquire Monitor
+↓
+Execute
+
+
+16.8 Two Objects Example
+
+Counter c1 = new Counter();
+Counter c2 = new Counter();
+
+Thread-A
+c1.increment();
+
+Thread-B
+c2.increment();
+
+Question
+
+Can both execute simultaneously?
+✅ Yes.
+Because
+
+Monitor(c1) ≠ Monitor(c2)
+
+Different objects.
+Different monitors.
+
+
+16.9 Summary (Interview Revision)
+🔴 A synchronized instance method acquires the monitor of the current object (this).
+🔴 Only one thread can execute synchronized instance methods guarded by the same object at a time.
+🔴 Other threads attempting to enter synchronized methods on that object enter the BLOCKED state.
+🔴 Different object instances have different monitors, so synchronization is independent across instances.
+🔴 Synchronized methods are a simple way to protect shared mutable state from race conditions.

@@ -1,0 +1,7 @@
+✅ 7. Synchronized Method vs Normal Method
+
+| Feature                         | Normal Method | Synchronized Method                                    |
+| ------------------------------- | ------------- | ------------------------------------------------------ |
+| Thread Safe                     | ❌ No         | ✅ Yes (for shared state protected by the same monitor)|
+| Lock Used                       | None          | `this` (instance methods)                              |
+| Multiple Threads Simultaneously | ✅ Yes        | Only one per monitor                                  |
