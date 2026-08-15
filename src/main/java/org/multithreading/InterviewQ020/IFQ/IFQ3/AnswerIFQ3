@@ -1,0 +1,7 @@
+✅ 3. Why is the lock declared final?
+
+Because replacing the lock object at runtime would break synchronization.
+Wrong : lock = new Object();
+
+Now some threads synchronize on the old lock while others synchronize on the new one.
+Mutual exclusion is lost.

@@ -1,0 +1,27 @@
+✅ 4. Can we write
+Object lock = new Object();
+
+inside the method?
+
+public void increment(){
+    Object lock = new Object();
+    synchronized(lock){
+
+    }
+}
+
+Answer ❌ No.
+
+Every method call creates a new lock object.
+
+Example
+
+Thread-A
+↓
+Lock-1
+Thread-B
+↓
+Lock-2
+Different monitors.
+
+No synchronization occurs between the threads.

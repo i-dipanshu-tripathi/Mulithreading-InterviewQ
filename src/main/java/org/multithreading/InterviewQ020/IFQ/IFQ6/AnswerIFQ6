@@ -1,0 +1,12 @@
+✅ 6. Can multiple methods synchronize on the same custom lock?
+
+Yes.
+
+synchronized(lock){
+
+}
+synchronized(lock){
+
+}
+
+Both methods are mutually exclusive because they use the same monitor.

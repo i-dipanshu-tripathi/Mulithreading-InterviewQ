@@ -1,0 +1,18 @@
+7.1 this vs Custom Lock
+
+| Feature                   | `this`       | Custom Lock |
+| ------------------------- | ------------ | ----------- |
+| Accessible Outside Class  | ✅ Yes        | ❌ No        |
+| Encapsulation             | Low          | High        |
+| Enterprise Preferred      | ❌ Usually No | ✅ Yes       |
+| Risk of External Blocking | High         | Low         |
+
+
+7.2 Synchronized Method vs this vs Custom Lock
+
+| Feature                | Synchronized Method | `synchronized(this)` | `synchronized(lock)` |
+| ---------------------- | ------------------- | -------------------- | -------------------- |
+| Lock                   | `this`              | `this`               | Custom object        |
+| Scope                  | Whole method        | Selected block       | Selected block       |
+| Encapsulation          | Low                 | Low                  | High                 |
+| Preferred for New Code | Sometimes           | Sometimes            | Often                |

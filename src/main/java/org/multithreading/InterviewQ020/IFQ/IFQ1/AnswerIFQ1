@@ -1,0 +1,3 @@
+✅ 1. Why use a custom lock object?
+
+To prevent external code from synchronizing on your object's monitor and interfering with your synchronization.

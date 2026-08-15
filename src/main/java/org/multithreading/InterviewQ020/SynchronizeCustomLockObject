@@ -1,0 +1,142 @@
+✅ 20. Synchronize on a Custom Lock Object
+
+20.1 Definition
+
+Instead of synchronizing on
+this
+or another publicly accessible object,
+we create a dedicated private lock object.
+
+private final Object lock = new Object();
+Then synchronize on it.
+
+synchronized(lock){
+
+}
+
+This is called using a custom lock object.
+
+20.2 Why Do We Need a Custom Lock?
+
+Suppose we write
+synchronized(this){
+
+}
+
+Anyone with a reference to our object can do
+synchronized(counter){
+
+}
+
+Now our internal synchronization is affected by external code.
+We lose control.
+
+Instead
+private final Object lock = new Object();
+Nobody outside the class can access it.
+
+Now
+only our class controls the lock.
+
+20.3 Syntax
+
+private final Object lock = new Object();
+public void increment(){
+    synchronized(lock){
+    }
+}
+
+20.4 Internal Working
+
+Suppose Thread-A enters
+increment();
+
+Flow
+
+Acquire lock monitor
+↓
+Execute Critical Section
+↓
+Release lock monitor
+
+Meanwhile Thread-B
+
+Acquire lock monitor
+↓
+Already Locked
+↓
+BLOCKED
+
+20.5 Memory Diagram
+
+Heap
+
++----------------------+
+| Counter              |
+|----------------------|
+| count = 5            |
+|                      |
+| lock --------------+ |
++--------------------|-+
+                     |
+                     ▼
+              +-------------+
+              | Lock Object |
+              |  Monitor    |
+              +-------------+
+
+Notice
+
+We are not locking the Counter object.
+We are locking the separate
+
+lock
+object.
+
+20.6 Why Is This Better?
+
+Suppose someone writes
+Counter counter = new Counter();
+
+synchronized(counter){
+    // Long running operation
+}
+
+Question
+
+Will
+counter.increment();
+
+be blocked?
+Answer
+No.
+
+Why?
+Because
+increment()
+uses
+synchronized(lock)
+
+NOT
+
+synchronized(this)
+Different monitors.
+
+20.7 Comparison
+
+Using this
+
+Counter
+↓
+Monitor
+
+Everyone can access it.
+Using Custom Lock
+
+Counter
+↓
+Private Lock Object
+↓
+Monitor
+
+Only the class knows about it.

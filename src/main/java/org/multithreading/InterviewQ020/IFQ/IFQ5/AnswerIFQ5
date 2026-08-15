@@ -1,0 +1,4 @@
+
+✅ 5. Why should the lock be an instance field?
+
+Because all threads operating on the same object must synchronize on the same monitor.

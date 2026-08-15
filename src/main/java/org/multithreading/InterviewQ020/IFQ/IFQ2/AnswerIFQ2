@@ -1,0 +1,3 @@
+✅ 2. Why is the lock declared private?
+
+To ensure no external class can access or synchronize on it.
