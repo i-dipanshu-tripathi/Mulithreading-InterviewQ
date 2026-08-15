@@ -1,0 +1,8 @@
+Q4. What gets locked?
+
+For
+public synchronized void increment()
+
+the monitor of
+this
+is locked.

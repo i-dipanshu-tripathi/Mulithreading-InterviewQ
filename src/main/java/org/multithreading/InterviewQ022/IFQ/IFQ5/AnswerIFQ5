@@ -1,0 +1,6 @@
+Q5. Does synchronization guarantee order?
+
+❌ No.
+Thread execution order is still determined by the scheduler.
+Synchronization guarantees mutual exclusion, not fairness or execution order.
+

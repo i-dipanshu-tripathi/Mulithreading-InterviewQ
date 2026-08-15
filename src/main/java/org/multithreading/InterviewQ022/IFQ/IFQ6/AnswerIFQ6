@@ -1,0 +1,5 @@
+Q6. Can synchronization prevent all concurrency problems?
+
+No.
+It prevents race conditions for code protected by the same monitor.
+Incorrect lock usage can still cause deadlocks or contention.

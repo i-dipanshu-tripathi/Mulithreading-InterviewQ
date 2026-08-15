@@ -1,0 +1,7 @@
+Q2. Does synchronized make count++ atomic?
+Correct Answer
+
+count++ itself is still not an atomic CPU instruction.
+What synchronized does is ensure exclusive access to the code containing count++.
+So effectively, the increment operation becomes atomic with respect to other threads using the same monitor.
+This is an important distinction.

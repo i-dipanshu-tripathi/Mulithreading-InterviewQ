@@ -1,0 +1,200 @@
+✅ 22. Fix the Race Condition Using Synchronization
+
+22.1 Problem Recap
+
+Earlier we had
+count++;
+
+which internally is
+
+Read count
+↓
+Increment
+↓
+Write count
+
+Two threads could execute these three steps simultaneously.
+
+Result:
+Expected = 200000
+Actual = 198543
+
+because updates were lost.
+
+22.2 Solution
+
+We make the critical section synchronized.
+
+public synchronized void increment() {
+    count++;
+}
+
+or
+
+public void increment() {
+    synchronized(this){
+        count++;
+    }
+}
+
+Both are equivalent.
+
+22.3 Complete Example
+
+class Counter {
+    private int count = 0;
+
+    public synchronized void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+
+Main Class
+
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+
+        Counter counter = new Counter();
+
+        Thread t1 = new Thread(() -> {
+            for(int i = 0; i < 100000; i++){
+                counter.increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for(int i = 0; i < 100000; i++){
+                counter.increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+
+        System.out.println(counter.getCount());
+    }
+}
+
+22.4 Output
+200000
+
+Every time.
+
+No missing updates.
+
+22.5 Why Does It Work?
+
+Because
+public synchronized void increment()
+internally becomes
+
+public void increment() {
+    synchronized(this){
+        count++;
+    }
+}
+
+Now only one thread can execute
+count++;
+at a time.
+
+22.6 Internal Working
+
+Suppose
+
+count = 5
+Thread-A
+
+Calls
+increment();
+
+Acquires
+Counter Monitor
+
+State
+RUNNING
+
+Thread-B
+
+Also calls
+increment();
+
+Can it enter?
+
+❌ No.
+State
+BLOCKED
+because Thread-A owns the monitor.
+
+Thread-A
+
+Executes
+
+Read
+↓
+5
+Increment
+↓
+6
+Write
+↓
+6
+
+Releases monitor.
+
+Thread-B
+
+Now acquires the monitor.
+Executes
+Read
+↓
+6
+Increment
+↓
+7
+Write
+↓
+7
+
+Correct result.
+
+22.7 Why Is It Thread-Safe?
+
+Because synchronization provides:
+
+Mutual Exclusion
+Only one thread enters the critical section.
+
+Atomicity
+Although
+
+count++;
+is internally
+
+Read
+↓
+Modify
+↓
+Write
+
+the entire sequence executes while holding the monitor.
+No other thread can interleave these steps.
+
+Visibility
+
+When a thread exits a synchronized block:
+Changes are flushed to main memory.
+
+When another thread enters:
+It sees the latest values.
+
+This is guaranteed by the Java Memory Model (JMM).
+
+

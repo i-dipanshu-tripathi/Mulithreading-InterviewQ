@@ -1,0 +1,4 @@
+Q3. What thread state does another thread enter?
+
+BLOCKED
+while waiting for the monitor.

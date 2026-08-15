@@ -1,0 +1,17 @@
+7.1 Race Condition vs Synchronized
+
+| Feature          | Without Synchronization | With Synchronization |
+| ---------------- | ----------------------- | -------------------- |
+| Race Condition   | ✅ Yes                   | ❌ No                 |
+| Data Consistency | ❌ No                    | ✅ Yes                |
+| Mutual Exclusion | ❌ No                    | ✅ Yes                |
+| Thread Safety    | ❌ No                    | ✅ Yes                |
+
+7.2 synchronized vs volatile
+
+| Feature                 | `synchronized`          | `volatile` |
+| ----------------------- | ----------------------- | ---------- |
+| Prevents Race Condition | ✅ Yes                   | ❌ No       |
+| Mutual Exclusion        | ✅ Yes                   | ❌ No       |
+| Visibility              | ✅ Yes                   | ✅ Yes      |
+| Atomic `count++`        | ✅ (by exclusive access) | ❌ No       |
