@@ -1,0 +1,194 @@
+✅ 21. Race Condition on a Shared Counter
+
+21.1 Definition
+
+A Race Condition occurs when:
+
+🔴 Two or more threads access the same shared mutable resource.
+🔴 At least one thread modifies it.
+🔴 There is no proper synchronization.
+🔴 The final result depends on the unpredictable execution order (race) of the threads.
+
+In simple words:
+🔴 Multiple threads are "racing" to modify the same data, leading to inconsistent or incorrect results.
+
+21.2 Why Does a Race Condition Occur?
+
+Suppose we have count = 0
+
+Two threads execute
+count++;
+
+simultaneously. You might think
+
+0
+↓
+1
+↓
+2
+
+But that's not how it actually works.
+
+21.3 count++ is NOT Atomic
+
+This is one of the biggest interview points.
+Most beginners think count++;
+
+is a single operation.
+❌ Wrong.
+
+It actually consists of three operations.
+
+Read count
+↓
+Increment
+↓
+Write count
+
+Since these three steps can be interleaved between threads, race conditions occur.
+
+21.4 Example Without Synchronization
+
+class Counter {
+    private int count = 0;
+    public void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+
+Main Class
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Counter counter = new Counter();
+
+        Thread t1 = new Thread(() -> {
+            for(int i=0;i<100000;i++){
+                counter.increment();
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            for(int i=0;i<100000;i++){
+                counter.increment();
+            }
+        });
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        System.out.println(counter.getCount());
+
+    }
+}
+
+21.5 Expected Output
+
+We expect 200000
+because 100000 + 100000 = 200000
+
+21.6 Actual Output
+
+Possible outputs: 198756 or 199321 or 197842
+
+Every execution may produce a different answer.
+This is the definition of a race condition.
+
+21.7 Step-by-Step Internal Working
+
+Suppose count = 5
+
+Both threads execute
+count++;
+at the same time.
+
+Thread-A
+
+Read count
+↓
+5
+
+Thread-B
+
+Before Thread-A writes back,
+it also executes
+
+Read count
+↓
+5
+
+Now
+
+Both threads think
+count = 5
+
+Thread-A
+
+5 + 1
+↓
+6
+
+Writes
+count = 6
+
+Thread-B
+
+Still has its own copy
+
+5 + 1
+↓
+6
+
+Writes
+count = 6
+
+Final Value
+Instead of 7
+
+we get
+6
+One increment is lost.
+This is called a Lost Update.
+
+21.8 Real-World Examples
+
+Banking
+Balance = ₹10,000
+
+Thread-A
+Withdraw ₹3000
+
+Thread-B
+Withdraw ₹4000
+
+Without synchronization,
+
+both may read
+10000
+
+Result
+Incorrect Balance
+
+21.9. Race Condition vs Thread Safety
+
+| Feature         | Race Condition    | Thread Safety |
+| --------------- | ----------------   -------------  |
+| Shared Data     | Yes               | Yes           |
+| Synchronization | ❌ No             | ✅ Yes        |
+| Correct Result  | ❌ Not Guaranteed | ✅ Guaranteed |
+| Predictable     | ❌ No             | ✅ Yes        |
+
+21.10 Race Condition vs Deadlock
+
+| Feature         | Race Condition               | Deadlock          |
+| --------------- | ---------------------------- | ----------------- |
+| Cause           | Concurrent modification      | Waiting for locks |
+| Progress        | Continues with wrong results | Stops completely  |
+| Data Corruption | ✅ Possible                  | ❌ Usually No     |
+| Threads Blocked | ❌ Not necessarily           | ✅ Yes            |
+
