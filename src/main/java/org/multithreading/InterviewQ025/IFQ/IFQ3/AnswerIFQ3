@@ -1,0 +1,11 @@
+Q3. Can two instance synchronized methods execute simultaneously?
+
+Depends.
+
+Same object
+
+❌ No.
+
+Different objects
+
+✅ Yes.

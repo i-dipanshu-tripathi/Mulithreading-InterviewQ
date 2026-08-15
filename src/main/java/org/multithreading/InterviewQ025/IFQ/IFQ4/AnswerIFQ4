@@ -1,0 +1,7 @@
+Q4. Can two static synchronized methods execute simultaneously?
+
+❌ No.
+
+They share the same
+
+Class Monitor

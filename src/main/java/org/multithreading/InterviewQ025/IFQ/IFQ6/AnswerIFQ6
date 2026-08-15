@@ -1,0 +1,7 @@
+Q6. Does a class have multiple monitors?
+
+No.
+
+A class has one Class object, therefore one class monitor.
+
+Every object instance has its own separate monitor.

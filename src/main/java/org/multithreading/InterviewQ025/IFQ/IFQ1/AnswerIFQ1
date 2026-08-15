@@ -1,0 +1,5 @@
+Q1. What gets locked in an instance synchronized method?
+
+Answer
+
+this

@@ -1,0 +1,5 @@
+Q2. What gets locked in a static synchronized method?
+
+Answer
+
+Class Object

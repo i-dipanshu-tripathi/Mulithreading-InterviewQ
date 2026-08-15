@@ -1,0 +1,6 @@
+Q7. Which should I use?
+
+Use:
+
+Instance synchronization when protecting instance variables.
+Static synchronization when protecting static variables or other class-wide shared resources.

@@ -1,0 +1,6 @@
+Q5. Can a static synchronized method and an instance synchronized method execute simultaneously?
+
+✅ Yes.
+
+Different monitors.
+This is one of the most asked interview questions.

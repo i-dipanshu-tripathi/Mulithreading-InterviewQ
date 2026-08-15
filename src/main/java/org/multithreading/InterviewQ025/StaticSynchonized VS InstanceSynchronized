@@ -1,0 +1,290 @@
+Question 30: Static synchronized vs Instance synchronized
+
+25.1 Definition
+
+There are two types of synchronized methods in Java.
+
+Instance Synchronized Method
+Locks the current object (this).
+
+public synchronized void increment() {
+
+}
+
+Static Synchronized Method
+
+Locks the Class object.
+
+public static synchronized void print() {
+
+}
+
+This is the biggest interview point.
+
+25.2 What Gets Locked?
+
+Instance Method
+
+public synchronized void deposit() {
+
+}
+
+Locks
+
+this
+
+Current object's monitor.
+
+Static Method
+public static synchronized void deposit() {
+
+}
+
+Locks
+
+Class Object
+
+Example
+
+Counter.class
+
+Every Java class has exactly one Class object loaded by the JVM.
+
+25.3 Memory Diagram
+
+Suppose
+
+Counter c1 = new Counter();
+Counter c2 = new Counter();
+
+Memory
+
+Heap
+
+Counter Object c1
+↓
+Monitor-1
+
+Counter Object c2
+↓
+Monitor-2
+
+Counter.class
+↓
+Class Monitor
+
+Notice
+
+Three different monitors exist.
+
+25.4 Instance Synchronized Example
+
+class Counter {
+    public synchronized void increment() {
+        System.out.println(Thread.currentThread().getName());
+    }
+}
+
+Main
+
+Counter c1 = new Counter();
+Counter c2 = new Counter();
+
+Thread t1 = new Thread(() -> c1.increment());
+Thread t2 = new Thread(() -> c2.increment());
+
+Question
+
+Will they block each other?
+
+No. Because
+Monitor(c1)≠Monitor(c2)
+
+25.5 Static Synchronized Example
+
+class Counter {
+    public static synchronized void print() {
+        System.out.println(Thread.currentThread().getName());
+    }
+}
+
+Main
+
+Thread t1 = new Thread(Counter::print);
+Thread t2 = new Thread(Counter::print);
+
+Question
+Can both execute simultaneously?
+
+❌ No.
+Because both use
+Counter.class Monitor
+
+25.6 Internal Working
+
+Instance Method
+public synchronized void increment()
+
+JVM internally does
+
+synchronized(this){
+
+}
+
+Static Method
+
+public static synchronized void print()
+
+JVM internally behaves like
+
+synchronized(Counter.class){
+
+}
+
+This is one of the most important interview answers.
+
+25.7 Can Static and Instance Methods Run Together?
+
+Suppose
+
+class Counter {
+    public synchronized void increment() {
+
+    }
+
+    public static synchronized void print() {
+
+    }
+}
+
+Thread-A
+counter.increment();
+
+Thread-B
+Counter.print();
+
+Question
+
+Will they block each other?
+
+Answer
+
+No.
+
+Why?
+
+Thread-A acquires
+counter Monitor
+
+Thread-B acquires
+Counter.class Monitor
+
+Different monitors.
+
+25.8 Visualization
+
+Counter Object
+↓
+Object Monitor
+
+Counter.class
+↓
+Class Monitor
+
+Different locks.
+
+Therefore No Blocking
+
+25.9 What If Two Objects Exist?
+
+Counter c1 = new Counter();
+Counter c2 = new Counter();
+
+Instance Synchronization
+
+Thread-A
+↓
+c1 Monitor
+
+Thread-B
+↓
+c2 Monitor
+
+No blocking.
+
+Static Synchronization
+
+Thread-A
+↓
+Counter.class
+
+Thread-B
+↓
+Counter.class
+
+Blocking occurs.
+
+25.10 Real-World Example
+
+Imagine
+
+ATM-1
+ATM-2
+ATM-3
+
+Each ATM has its own lock.
+
+This is like
+
+Instance Synchronization
+
+Now imagine
+
+Reserve Bank Server
+
+Only one update is allowed globally.
+
+This is like
+
+Static Synchronization
+
+All ATMs must wait because they share the same class-level resource.
+
+17. Instance vs Static Synchronized
+
+| Feature               | Instance `synchronized` | Static `synchronized`            |
+| --------------------- | ----------------------- | -------------------------------- |
+| Lock                  | `this`                  | `Class` object (`MyClass.class`) |
+| Monitor               | Object Monitor          | Class Monitor                    |
+| Shared Across Objects | ❌ No                    | ✅ Yes                            |
+| Protects              | Instance data           | Static/class data                |
+| Concurrency           | Higher                  | Lower                            |
+
+18. Complete Comparison
+
+| Scenario                                    | Block? |
+| ------------------------------------------- | ------ |
+| Same object → Instance synchronized         | ✅ Yes  |
+| Different objects → Instance synchronized   | ❌ No   |
+| Two static synchronized methods             | ✅ Yes  |
+| Static synchronized + Instance synchronized | ❌ No   |
+
+                    JVM Memory
+
+               Counter.class
+                     │
+                     ▼
+              Class Monitor
+                     ▲
+                     │
+      static synchronized methods
+
+
+     Counter c1                Counter c2
+         │                         │
+         ▼                         ▼
+   Object Monitor-1         Object Monitor-2
+         ▲                         ▲
+         │                         │
+ instance synchronized     instance synchronized
+
