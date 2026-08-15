@@ -1,0 +1,169 @@
+✅ 15. Interrupt a Sleeping Thread
+
+15.1 Definition
+
+🔴 interrupt() is a method of the Thread class used to request that a thread stop what it is doing.
+🔴 Important: interrupt() does not forcibly stop a thread.
+🔴 Instead, it signals the thread by setting its interrupt status (interrupt flag).
+🔴 If the thread is blocked in an interruptible method like sleep(), wait(), or join(), that method throws InterruptedException.
+
+15.2 Method Signature
+public void interrupt()
+
+15.3 Why Do We Need interrupt()?
+Imagine a worker thread:
+
+Download File
+↓
+Sleep 10 Seconds
+↓
+Continue
+
+Now suppose the user clicks Cancel Download.
+
+Should we wait 10 seconds?
+❌ No.
+
+Instead
+workerThread.interrupt();
+The sleeping thread wakes up immediately.
+
+15.4 How interrupt() Works
+
+Suppose
+Thread.sleep(10000);
+
+Current State
+TIMED_WAITING
+
+Another thread executes
+thread.interrupt();
+
+Flow
+
+TIMED_WAITING
+↓
+interrupt()
+↓
+InterruptedException
+↓
+Catch Block
+↓
+Continue / Exit
+
+15.5 Output
+Thread Sleeping...
+
+Thread Interrupted!
+
+Notice
+We never waited
+
+10 seconds
+The thread woke immediately because it was interrupted.
+
+15.6 Step-by-Step Explanation
+
+Step 1
+Main creates thread.
+thread.start();
+
+State
+RUNNABLE
+
+Step 2
+
+Child executes
+Thread.sleep(10000);
+
+State
+TIMED_WAITING
+
+Step 3
+
+Main waits
+Thread.sleep(2000);
+
+to ensure child is sleeping.
+
+Step 4
+
+Main executes
+thread.interrupt();
+This interrupts the sleeping thread.
+
+Step 5
+
+JVM notices
+
+Sleeping Thread
++
+Interrupt Signal
+
+Immediately throws
+InterruptedException
+inside the child thread.
+
+Step 6
+
+Execution jumps directly to
+catch (InterruptedException e)
+
+Output
+
+Thread Interrupted!
+The remaining code after sleep() is skipped.
+
+15.7 Internal Working
+
+RUNNABLE
+↓
+sleep(10000)
+↓
+TIMED_WAITING
+↓
+interrupt()
+↓
+InterruptedException
+↓
+Catch Block
+↓
+Continue / Exit
+
+15.8 What is the Interrupt Flag?
+
+Every thread internally has an interrupt status flag.
+
+Initially
+false
+
+When another thread executes
+thread.interrupt();
+
+the flag becomes
+true
+
+However, if the thread is blocked in sleep(), wait(), or join(), the JVM:
+
+Throws InterruptedException
+Clears the interrupt flag (sets it back to false)
+
+This is an important interview point.
+
+15.9. interrupt() vs stop()
+
+| Feature                 | `interrupt()` | `stop()`          |
+| ----------------------- | ------------- | ----------------- |
+| Safe                    | ✅ Yes         | ❌ No (deprecated) |
+| Graceful                | ✅ Yes         | ❌ No              |
+| Cooperative             | ✅ Yes         | ❌ No              |
+| Releases Locks Abruptly | ❌ No          | ✅ Yes (dangerous) |
+
+15.10 interrupt() vs sleep()
+| Feature                       | `interrupt()`        | `sleep()`                             |
+| ----------------------------- | -------------------- | ------------------------------------- |
+| Purpose                       | Request interruption | Pause current thread                  |
+| Static                        | ❌ No                 | ✅ Yes                                 |
+| Throws `InterruptedException` | No                   | Yes (when interrupted while sleeping) |
+| Changes State                 | Signals thread       | Causes `TIMED_WAITING`                |
+
