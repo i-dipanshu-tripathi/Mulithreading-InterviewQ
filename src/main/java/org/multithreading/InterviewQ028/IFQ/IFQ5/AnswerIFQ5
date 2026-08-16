@@ -1,0 +1,4 @@
+✅ 5. Why do we use while instead of if before wait()?
+
+Because after waking up, the thread must re-check whether the condition is actually satisfied.
+This handles spurious wakeups and situations where another thread changes the shared state before the awakened thread reacquires the monitor.

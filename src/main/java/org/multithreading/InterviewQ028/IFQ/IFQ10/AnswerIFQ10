@@ -1,0 +1,3 @@
+✅ 10. Can this be generalized to N threads?
+
+Yes. For N threads, each thread can be assigned a remainder and the condition can be generalized as number % N == threadId.

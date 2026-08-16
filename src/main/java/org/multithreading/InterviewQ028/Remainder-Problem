@@ -1,0 +1,809 @@
+✅ 28. Print Numbers Using Three Threads — Remainder Problem
+
+This question extends the Odd–Even Problem from 2 threads to 3 threads.
+The core synchronization pattern remains the same: shared state → condition check → wait() → perform work → update state → notifyAll().
+This is the same synchronization template used in the Producer–Consumer problem.
+
+🎗️ 28.1 Problem Statement
+
+Implement a program to print numbers sequentially using three threads.
+Each thread is responsible for numbers based on the remainder obtained by dividing the current number by 3.
+
+Responsibilities
+------------------------------------------------------
+| Thread        | Condition         | Numbers        |
+| ------------- | ----------------- | -------------- |
+| `Remainder-1` | `number % 3 == 1` | 1, 4, 7, 10... |
+| `Remainder-2` | `number % 3 == 2` | 2, 5, 8, 11... |
+| `Remainder-0` | `number % 3 == 0` | 3, 6, 9, 12... |
+------------------------------------------------------
+
+Expected Output
+
+For N = 12:
+
+Remainder-1 → 1
+Remainder-2 → 2
+Remainder-0 → 3
+Remainder-1 → 4
+Remainder-2 → 5
+Remainder-0 → 6
+Remainder-1 → 7
+Remainder-2 → 8
+Remainder-0 → 9
+Remainder-1 → 10
+Remainder-2 → 11
+Remainder-0 → 12
+
+The important point is:
+
+Three different threads are responsible for printing, but the numbers must remain sequential.
+
+🎗️ 28.2 Why Is This Question Asked?
+
+👉 This is basically the generalized version of the Odd–Even problem.
+
+Odd–Even Problem
+2 Threads
+    ↓
+number % 2
+    ↓
+Odd / Even
+
+👉 Remainder Problem
+
+3 Threads
+    ↓
+number % 3
+    ↓
+0 / 1 / 2
+
+So the interviewer is checking whether you understand how to generalize thread coordination instead of hardcoding logic for only two threads.
+
+🎗️ 28.3 Thought Process
+
+👉 Before writing the code, think:
+
+Shared Number
+   ↓
+Multiple Threads
+   ↓
+All threads access same number
+   ↓
+Synchronization Required
+   ↓
+Each thread gets a remainder
+   ↓
+number % 3
+   ↓
+Is it my remainder?
+   ↓
+   NO
+   ↓
+ wait()
+   ↓
+  YES
+   ↓
+ Print Number
+   ↓
+ Increment Number
+   ↓
+ notifyAll()
+   ↓
+ Repeat
+
+This follows the same condition-based synchronization pattern used in Producer–Consumer.
+
+🎗️ 28.4 Shared Resource
+
+🔴 The main shared resource is: currNumber
+🔴 All three threads access the same RemainderManager object.
+
+Conceptually:
+
+  RemainderManager
+       |
+    currNumber limit
+     /    |    \
+    /     |     \
+  T0     T1     T2
+
+There is:
+
+🔴 One shared counter
+🔴 One limit
+🔴 One common monitor
+🔴 Three worker threads
+
+This is similar to Producer–Consumer, where Producer and Consumer use the same SharedBuffer object and therefore the same shared state/monitor.
+
+🎗️ 28.5 Variables Required
+
+👉 Your RemainderManager contains:
+
+🔴 currNumber
+🔴 limit
+
+----------------------------------------------------------
+| Variable     | Purpose                                 |
+| ------------ | --------------------------------------- |
+| `currNumber` | Current number that needs to be printed |
+| `limit`      | Maximum number to print                 |
+----------------------------------------------------------
+
+👉 For example:
+
+🔴 currNumber = 1
+🔴 limit = 10
+
+👉 means:
+
+🔴 Print numbers from 1 to 10
+🔴 Important Note About Your Current Code
+🔴 Your main() currently has: new RemainderManager(5, 10)
+🔴 Therefore, your current program starts from 5, not 1.
+🔴 So the actual sequence begins: 5 → 6 → 7 → 8 → 9 → 10
+🔴 That is completely valid if your intention is to start at 5.
+🔴 If you want the classic interview problem: 1 → 2 → 3 → ... → 10
+
+the starting value should be 1.
+
+🎗️ 28.6 Ownership Rule
+
+This is the heart of the problem.
+Each thread owns one remainder.
+
+-----------------------------------------------------
+| Thread        | Remainder | Condition             |
+| ------------- | --------: | --------------------- |
+| `Remainder-0` |       `0` | `currNumber % 3 == 0` |
+| `Remainder-1` |       `1` | `currNumber % 3 == 1` |
+| `Remainder-2` |       `2` | `currNumber % 3 == 2` |
+----------------------------------------------------
+
+👉 Example 1
+
+currNumber = 7
+7 % 3 = 1
+
+Therefore:
+Remainder-1 prints 7
+
+👉 Example 2
+
+currNumber = 8
+8 % 3 = 2
+
+Therefore:
+Remainder-2 prints 8
+
+👉 Example 3
+
+currNumber = 9
+9 % 3 = 0
+
+Therefore:
+Remainder-0 prints 9
+
+🎗️ 28.7 Why Do We Need synchronized?
+
+🔴 Your method is: printRemainder()
+🔴 and it is declared: synchronized
+🔴 That means only one thread at a time can execute the synchronized method on the same RemainderManager object.
+
+Conceptually:
+
+  RemainderManager
+        |
+      Monitor
+   /     |     \
+ T0      T1      T2
+
+🔴 Only one thread can hold the monitor at a time.
+🔴 This prevents multiple threads from simultaneously modifying: currNumber
+🔴 Without synchronization, two threads could potentially read/update the shared counter concurrently, creating a race condition.
+
+🎗️ 28.8 Why wait()?
+
+🔴 Suppose: currNumber = 5
+🔴 Now: 5 % 3 = 2
+
+👉 Therefore:
+
+🔴 Remainder-2 → My turn
+🔴 Remainder-0 → Not my turn
+🔴 Remainder-1 → Not my turn
+
+👉 The threads whose remainder does not match must wait.
+
+Thread
+   ↓
+Check remainder
+   ↓
+Is it my turn?
+   ↓
+   NO
+   ↓
+ wait()
+
+wait() causes the thread to enter the WAITING state and releases the monitor so another thread can acquire it.
+
+🎗️ 28.9 Why while Instead of if?
+
+👉 Your code correctly uses:
+
+while(currNumber % 3 != number && currNumber <= limit)
+
+👉 instead of:
+
+if(currNumber % 3 != number) {
+    wait();
+}
+
+🔴 This is important. The thread must re-check the condition after waking up.
+
+wait()
+   ↓
+Wake Up
+   ↓
+Re-check remainder
+   ↓
+Is it my turn?
+   ↓
+YES → Continue
+NO  → wait() again
+
+👉 Reasons include:
+
+🔴 Spurious wakeups
+🔴 Multiple threads being awakened
+🔴 Another thread changing the shared state before the awakened thread reacquires the monitor
+
+🎗️ 28.10 Why notifyAll()?
+
+🔴 After a thread prints a number: currNumber++;
+🔴 the ownership of the next number changes.
+
+👉 For example:
+
+currNumber = 5
+Thread-2 prints: 5
+
+Then: currNumber = 6
+Now: 6 % 3 = 0
+
+So Thread-0 should get the opportunity to print.
+
+👉  Therefore:
+
+Print
+ ↓
+currNumber++
+ ↓
+notifyAll()
+ ↓
+Waiting threads wake
+ ↓
+Each checks its condition
+ ↓
+Correct thread proceeds
+
+This is why your code uses: notifyAll();
+rather than simply continuing.
+
+🎗️ 28.11 Why notifyAll() Instead of notify()?
+
+👉 Suppose:
+
+Remainder-0
+Remainder-1
+Remainder-2
+
+are waiting.
+
+🔴 After one thread increments currNumber, we don't know which waiting thread should proceed.
+
+👉 For example:
+
+currNumber = 7
+7 % 3 = 1
+
+Only:
+🔴 Remainder-1 should print.
+🔴 If notify() wakes the wrong thread:
+
+Remainder-0 wakes
+  ↓
+Checks 7 % 3 == 0
+  ↓
+false
+  ↓
+waits again
+
+🔴 The correct thread may still remain waiting.
+🔴 With: notifyAll() all waiting threads get an opportunity to re-check their conditions.
+
+notifyAll()
+      ↓
+All waiting threads wake
+      ↓
+Check condition
+      ↓
+Correct remainder thread proceeds
+
+This is exactly the reason notifyAll() is preferred when multiple waiting thread types may exist.
+
+🎗️ 28.12 Complete Synchronization Logic
+
+👉 The complete logic of your printRemainder() method is:
+
+Thread enters
+     ↓
+Acquire monitor
+     ↓
+currNumber <= limit?
+     ↓
+Check my remainder
+     ↓
+Not my turn?
+     ↓
+wait()
+     ↓
+Wake up
+     ↓
+Re-check condition
+     ↓
+My turn?
+     ↓
+Print number
+     ↓
+currNumber++
+     ↓
+notifyAll()
+     ↓
+return true
+     ↓
+Thread calls method again
+
+🎗️ 28.13 Understanding printRemainder(int number)
+
+The parameter: number represents the remainder owned by the thread.
+
+👉 For example:
+
+printRemainder(0)
+means: I am responsible for remainder 0
+
+👉 Similarly:
+
+printRemainder(1)
+means: I am responsible for remainder 1
+
+printRemainder(2)
+means: I am responsible for remainder 2
+
+So instead of creating three different methods, you have one generic method.
+That's a very good design choice.
+
+🎗️ 28.14 Thread Creation
+
+Your main method creates three threads:
+
+Thread-0 → printRemainder(0)
+Thread-1 → printRemainder(1)
+Thread-2 → printRemainder(2)
+
+👉 Conceptually:
+
+RemainderManager
+       |-- currNumber
+       |-- limit
+       ├── Remainder-0 → remainder 0
+       ├── Remainder-1 → remainder 1
+       └── Remainder-2 → remainder 2
+
+All three threads share the same manager object.
+
+🎗️ 28.15 Why while(printRemainder(...)) ?
+
+🔴 Your thread code uses: while(remainderManager.printRemainder(0));
+
+This means:
+
+Call printRemainder()
+ ↓
+Returns true?
+ ↓
+Yes
+ ↓
+Call again
+ ↓
+...
+ ↓
+Returns false
+ ↓
+Thread terminates
+
+🔴 Your printRemainder() returns: true after successfully printing a number.
+🔴 When: currNumber > limit it eventually returns: false
+🔴 which terminates the thread's loop.
+
+So the return value acts as a continuation signal.
+
+🎗️ 28.16 Why currNumber++?
+
+🔴 After printing: currNumber the shared number must move to the next number.
+
+For example:
+
+5
+ ↓
+print 5
+ ↓
+currNumber++
+ ↓
+6
+
+🔴 Then: 6 % 3 = 0 So the remainder-0 thread gets its turn.
+🔴 Without incrementing: currNumber the same number would remain forever and the program could never progress.
+
+🎗️ 28.17 Dry Run
+
+👉 Let's use:
+
+🔴 currNumber = 1
+🔴 limit = 10
+
+👉 Step 1
+🔴 currNumber = 1
+🔴 Check: 1 % 3 = 1
+🔴 Therefore: Remainder-1 prints 1
+
+👉 Then:
+🔴 currNumber = 2
+🔴 notifyAll()
+
+👉 Step 2
+🔴 currNumber = 2
+🔴 2 % 3 = 2
+
+👉 Therefore:
+🔴 Remainder-2 prints 2
+
+👉 Then:
+🔴 currNumber = 3
+🔴 notifyAll()
+
+👉 Step 3
+🔴 currNumber = 3
+🔴 3 % 3 = 0
+🔴 Therefore: Remainder-0 prints 3
+
+👉 Then:
+🔴 currNumber = 4
+🔴 notifyAll()
+
+👉 Step 4
+🔴 4 % 3 = 1
+🔴 Therefore: Remainder-1 prints 4
+
+👉 Complete Flow
+
+1 % 3 = 1 → Thread-1
+2 % 3 = 2 → Thread-2
+3 % 3 = 0 → Thread-0
+
+4 % 3 = 1 → Thread-1
+5 % 3 = 2 → Thread-2
+6 % 3 = 0 → Thread-0
+
+7 % 3 = 1 → Thread-1
+8 % 3 = 2 → Thread-2
+9 % 3 = 0 → Thread-0
+
+10 % 3 = 1 → Thread-1
+
+👉 Output remains:
+1 2 3 4 5 6 7 8 9 10 but three different threads perform the printing.
+
+🎗️ 28.18 Important Point About Thread Scheduling
+
+🔴 The JVM/OS decides which thread gets CPU time.
+🔴 Therefore, the threads may enter printRemainder() in any order.
+
+👉 For example:
+
+Remainder-0 enters first
+  ↓
+5 % 3 != 0
+  ↓
+wait()
+
+👉 Then:
+
+Remainder-1 enters
+ ↓
+5 % 3 != 1
+ ↓
+wait()
+
+👉 Then:
+
+Remainder-2 enters
+       ↓
+5 % 3 == 2
+       ↓
+Print 5
+
+🔴 The entry order of threads is not guaranteed.
+🔴 But the printing order is controlled by the remainder condition.That's the key idea.
+
+🎗️ 28.19 Current Code: What Happens With new RemainderManager(5, 10)?
+
+👉 Your current code starts at:
+
+🔴 currNumber = 5
+🔴 limit = 10
+
+👉 Therefore:
+
+5 % 3 = 2 → Remainder-2
+6 % 3 = 0 → Remainder-0
+7 % 3 = 1 → Remainder-1
+8 % 3 = 2 → Remainder-2
+9 % 3 = 0 → Remainder-0
+10 % 3 = 1 → Remainder-1
+
+So the logical output is:
+
+Remainder-2 → 5
+Remainder-0 → 6
+Remainder-1 → 7
+Remainder-2 → 8
+Remainder-0 → 9
+Remainder-1 → 10
+
+The exact order in which threads enter the method is nondeterministic, but the number sequence remains controlled.
+
+🎗️ 28.20 wait() and notifyAll() Flow
+
+👉 The entire communication looks like this:
+
+Thread-1
+   ↓
+Not my remainder
+   ↓
+wait()
+
+
+Thread-2
+   ↓
+My remainder
+   ↓
+Print
+   ↓
+currNumber++
+   ↓
+notifyAll()
+   ↓
+Thread-0 / Thread-1 wake
+   ↓
+Re-check condition
+
+🔴 This is inter-thread communication.
+
+🎗️ 28.21 Comparison With Odd–Even
+--------------------------------------------------------------------------------------
+| Feature        | Odd–Even                        | Remainder Problem               |
+| -------------- | ------------------------------- | ------------------------------- |
+| Threads        | 2                               | 3                               |
+| Condition      | `number % 2`                    | `number % 3`                    |
+| Ownership      | Odd / Even                      | Remainder 0 / 1 / 2             |
+| Shared Counter | Yes                             | Yes                             |
+| `synchronized` | Yes                             | Yes                             |
+| `wait()`       | Yes                             | Yes                             |
+| `notifyAll()`  | Yes                             | Yes                             |
+| Core Pattern   | Condition-based synchronization | Condition-based synchronization |
+--------------------------------------------------------------------------------------
+
+🎗️ 28.22 Remainder Problem vs Producer–Consumer
+
+This is a very important interview connection.
+
+👉 Producer–Consumer
+
+Shared Resource
+      ↓
+Check Condition
+      ↓
+Buffer Full / Empty
+      ↓
+wait()
+      ↓
+State Change
+      ↓
+notifyAll()
+
+👉 Remainder Problem
+
+Shared Resource
+      ↓
+Check Condition
+      ↓
+Is My Remainder?
+      ↓
+wait()
+      ↓
+State Change
+      ↓
+notifyAll()
+
+So the synchronization template is the same.
+Only the condition changes.
+
+🎗️ 28.23 Common Mistakes
+
+❌ Creating three separate counters
+❌ Creating three different RemainderManager objects
+❌ Using if instead of while
+❌ Forgetting notifyAll()
+❌ Forgetting currNumber++
+❌ Calling wait() outside synchronized context
+❌ Using different monitor objects
+❌ Hardcoding separate methods for remainder 0, 1 and 2
+❌ Using busy waiting
+❌ Calling run() instead of start()
+
+🎗️ 28.24 Why One Shared Counter?
+
+This is extremely important.
+
+👉 Suppose we used:
+
+Thread-0 → counter0
+Thread-1 → counter1
+Thread-2 → counter2
+
+Then there would be no single source of truth for the sequence.
+
+Instead:
+
+ currNumber
+  /   |   \
+ /    |    \
+T0     T1     T2
+
+All threads look at the same current number.
+Therefore, they can determine:
+
+Whose turn is it?
+based on: currNumber % 3
+
+🎗️ 28.25 Why One Common Monitor?
+
+All threads must coordinate through the same shared state.
+
+Therefore:
+RemainderManager
+      ↓
+    Monitor
+   /   |   \
+ T0    T1    T2
+
+If each thread synchronized on a different object, they would not properly coordinate with each other.
+
+🎗️ 28.26 Can We Generalize This?
+
+Yes. This is the most important extension.
+
+👉 Instead of:
+3 Threads
+
+👉 we can have:
+N Threads
+Each thread can own a remainder.
+
+👉 Conceptually:
+
+number % N == threadId
+
+For example, with:
+
+N = 5
+
+we can have:
+
+Thread-0 → remainder 0
+Thread-1 → remainder 1
+Thread-2 → remainder 2
+Thread-3 → remainder 3
+Thread-4 → remainder 4
+
+This is the foundation for the more generalized cyclic execution of N threads problem.
+
+🎗️ 28.27 Advantages
+
+✔ Demonstrates inter-thread communication
+✔ Demonstrates condition-based synchronization
+✔ Prevents race conditions on the shared counter
+✔ Maintains sequential output
+✔ Uses one shared resource
+✔ Easy to generalize
+✔ Demonstrates wait() and notifyAll()
+✔ Extends the Odd–Even synchronization pattern
+
+🎗️ 28.28 Disadvantages
+
+❌ Multiple threads may spend time waiting
+❌ notifyAll() can wake threads that cannot proceed
+❌ More threads can cause additional context switching
+❌ Incorrect synchronization can cause deadlocks or progress issues
+❌ Logic becomes more complex as the number of threads increases
+
+🎗️ 28.29 Best Practices
+
+✔ Use one shared manager object
+✔ Use one shared counter
+✔ Assign each thread a remainder
+✔ Keep the synchronization logic inside RemainderManager
+✔ Use synchronized
+✔ Always use while before wait()
+✔ Use notifyAll() after changing shared state
+✔ Do not use busy waiting
+✔ Parameterize the remainder instead of creating duplicate methods
+✔ Make the starting number and limit configurable
+
+🎗️ 28.30 Complete Execution Flow
+
+          RemainderManager
+          /              \
+         ↓                ↓
+   currNumber            limit
+         |
+┌────────┼────────┐
+↓        ↓        ↓
+T0        T1       T2
+|         |        |
+% 3        % 3      % 3
+|         |        |
+└─────────┼────────┘
+          ↓
+  Is it my remainder?
+     /          \
+   NO            YES
+   ↓              ↓
+wait()          Print
+                  ↓
+            currNumber++
+                  ↓
+              notifyAll()
+                  ↓
+           Repeat process
+
+🎗️ 28.31 Core Synchronization Pattern
+
+This is the most important part to remember:
+
+Acquire Monitor
+      ↓
+Check Condition
+      ↓
+Condition False
+      ↓
+wait()
+      ↓
+Wake Up
+      ↓
+Re-check Condition
+      ↓
+Condition True
+      ↓
+Do Work
+      ↓
+Update Shared State
+      ↓
+notifyAll()
+      ↓
+Repeat
+
+This is the same fundamental pattern as the Producer–Consumer problem.

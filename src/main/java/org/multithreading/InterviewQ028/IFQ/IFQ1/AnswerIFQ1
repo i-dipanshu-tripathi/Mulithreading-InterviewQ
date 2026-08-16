@@ -1,0 +1,6 @@
+✅ 1. How is the Remainder Problem different from Odd–Even?
+
+Answer:
+
+Odd–Even uses number % 2 to divide work between two threads, whereas the Remainder Problem uses number % 3 to divide work among three threads.
+The synchronization pattern remains the same.

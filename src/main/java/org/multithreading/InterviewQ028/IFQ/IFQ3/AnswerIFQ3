@@ -1,0 +1,3 @@
+✅ 3. Why is number % 3 used?
+
+Because there are three threads, and the remainder identifies which thread should process the current number.

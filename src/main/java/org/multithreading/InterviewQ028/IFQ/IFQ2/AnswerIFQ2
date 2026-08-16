@@ -1,0 +1,4 @@
+✅ 2. Why do we use one shared counter?
+
+Because all threads must coordinate on the same sequence.
+The current number determines which thread owns the turn.

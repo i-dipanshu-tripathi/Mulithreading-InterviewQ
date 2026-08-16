@@ -1,0 +1,3 @@
+✅ 9. Why can't we use three separate counters?
+
+Because the threads need a single shared sequence. A single currNumber allows every thread to determine whose turn it is.

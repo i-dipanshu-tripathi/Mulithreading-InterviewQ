@@ -1,0 +1,4 @@
+✅ 6. Why notifyAll()?
+
+Because multiple threads may be waiting, and we don't know which thread owns the next number.
+notifyAll() wakes the waiting threads so they can re-check their conditions.

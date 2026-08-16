@@ -1,0 +1,4 @@
+✅ 7. Can we use notify() instead?
+
+Technically it can wake one waiting thread, but it may wake a thread whose remainder does not match the current number.
+Therefore, notifyAll() is safer for this multi-thread coordination pattern.

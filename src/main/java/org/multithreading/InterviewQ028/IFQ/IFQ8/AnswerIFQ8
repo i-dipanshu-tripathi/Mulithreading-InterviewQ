@@ -1,0 +1,4 @@
+✅ 8. Why is printRemainder() synchronized?
+
+Because all threads access and modify the shared currNumber.
+Synchronization provides mutual exclusion and protects the shared state from concurrent modification.
