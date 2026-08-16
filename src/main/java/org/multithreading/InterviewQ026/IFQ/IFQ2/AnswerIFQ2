@@ -1,0 +1,3 @@
+✅ 2. Why is number inside SharedResource?
+
+Because number is shared mutable state and both threads need access to the same variable.

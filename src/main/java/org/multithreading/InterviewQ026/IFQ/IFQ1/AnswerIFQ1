@@ -1,0 +1,2 @@
+✅ 1. Why do we need a shared object?
+Because both threads must access the same number and synchronize using the same monitor.

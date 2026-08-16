@@ -1,0 +1,2 @@
+✅ 10. Why don't we get a race condition?
+Because access to the shared number is protected by the same monitor through synchronized methods.

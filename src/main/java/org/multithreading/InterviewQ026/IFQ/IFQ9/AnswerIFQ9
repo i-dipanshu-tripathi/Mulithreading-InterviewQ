@@ -1,0 +1,3 @@
+✅ 9. Why use join()?
+
+To make the main thread wait until both worker threads complete.

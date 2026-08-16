@@ -1,0 +1,3 @@
+✅ 7. Does notify() release the lock?
+
+No. notify() only wakes a waiting thread. The current thread keeps the monitor until it exits the synchronized method/block or calls wait().

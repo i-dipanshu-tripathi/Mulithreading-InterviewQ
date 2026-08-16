@@ -1,0 +1,3 @@
+✅ 5. Why do we use notify()?
+
+After changing number, it wakes the other waiting thread.

@@ -1,0 +1,3 @@
+✅ 4. Why do we use wait()?
+
+When it is not the thread's turn, wait() suspends the thread and releases the monitor.

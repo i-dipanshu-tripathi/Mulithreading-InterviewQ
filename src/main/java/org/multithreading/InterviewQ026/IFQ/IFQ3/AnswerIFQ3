@@ -1,0 +1,2 @@
+✅ 3. Why are printEven() and printOdd() synchronized?
+To ensure mutual exclusion while accessing and modifying number.
