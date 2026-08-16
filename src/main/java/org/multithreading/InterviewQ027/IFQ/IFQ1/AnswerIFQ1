@@ -1,0 +1,3 @@
+✅ 1. What is the Producer–Consumer problem?
+
+It is a synchronization problem where Producers add data to a shared bounded buffer and Consumers remove data from it.

@@ -1,0 +1,865 @@
+✅ 27. Producer–Consumer Problem — Bounded Buffer
+
+🎗️ 27.1 Problem Statement
+
+Implement the Producer–Consumer problem using multiple threads and a shared bounded buffer.
+
+👉 Rules
+🔴 Producer produces items and inserts them into the buffer.
+🔴 Consumer removes items from the buffer.
+🔴 If the buffer is full, Producer must wait.
+🔴 If the buffer is empty, Consumer must wait.
+
+After the buffer state changes, waiting threads should be notified.
+👉 Example
+
+For capacity 5:
+
+Producer → [1]
+Producer → [1,2]
+Producer → [1,2,3]
+Producer → [1,2,3,4]
+Producer → [1,2,3,4,5]
+
+Buffer FULL
+     ↓
+Producer waits
+
+Consumer removes 1
+     ↓
+[2,3,4,5]
+     ↓
+Producer wakes
+     ↓
+Producer adds next item
+
+🎗️ 27.2 Thought Process
+
+👉 Before writing the code, think:
+
+Shared Buffer
+      ↓
+Producer + Consumer
+      ↓
+Both access same Queue
+      ↓
+Race Condition Possible
+      ↓
+Synchronization Required
+      ↓
+Buffer Full?
+      ↓
+Producer → wait()
+      ↓
+Buffer Empty?
+      ↓
+Consumer → wait()
+      ↓
+State Changes
+      ↓
+notifyAll()
+
+🎗️ 27.3 Identify Shared Resource
+
+The shared resource is: Queue buffer;
+Both Producer and Consumer access the same queue.
+
+Therefore:
+
+Shared Queue
+     ↓
+Multiple Threads
+     ↓
+Synchronization Required
+
+
+🎗️ 27.4 Components
+Component	Responsibility
+SharedBuffer	Maintains the shared queue and synchronization logic
+buffer	Stores produced items
+capacity	Maximum number of elements allowed in the buffer
+Producer	Produces and sends items to the shared buffer
+Consumer	Consumes items from the shared buffer
+produce()	Adds an item to the buffer
+consume()	Removes an item from the buffer
+synchronized	Provides mutual exclusion
+wait()	Makes the thread wait when it cannot proceed
+notifyAll()	Wakes waiting threads after the buffer state changes
+start()	Starts Producer and Consumer threads
+
+🎗️ 27.5 Buffer States
+There are three possible states.
+
+👉 Empty []
+Consumer cannot consume.
+
+Therefore:
+Consumer → wait()
+
+👉 Partially Filled [1,2,3]
+Both Producer and Consumer can potentially work.
+
+👉 Full
+For capacity 5: [1,2,3,4,5]
+Producer cannot insert another item.
+
+Therefore:
+Producer → wait()
+
+🎗️ 27.6 Synchronization Logic
+
+👉 Producer
+
+Producer
+   ↓
+Buffer Full?
+   ↓
+Yes
+   ↓
+wait()
+   ↓
+No
+   ↓
+produce item
+   ↓
+notifyAll()
+
+👉 Consumer
+
+Consumer
+   ↓
+Buffer Empty?
+   ↓
+Yes
+   ↓
+wait()
+   ↓
+No
+   ↓
+consume item
+   ↓
+notifyAll()
+
+🎗️ 27.7 Why Do We Need synchronized?
+
+🔴 Both Producer and Consumer access the same shared queue.
+
+👉 Without synchronization:
+
+Producer
+    ↓
+buffer.offer()
+
+Consumer
+    ↓
+buffer.poll()
+
+🔴 Both threads could access the shared queue simultaneously.
+🔴 This can result in a race condition.
+
+Therefore:
+
+public synchronized void produce(...)
+and
+public synchronized Object consume()
+
+are used.
+
+🔴 Both methods synchronize on the same SharedBuffer object's monitor.
+
+ SharedBuffer
+      ↓
+   Monitor
+   ↙      ↘
+Producer   Consumer
+
+🎗️ 27.8 Why wait()?
+
+👉 Suppose:
+
+Capacity = 5
+Buffer = [1,2,3,4,5]
+
+🔴 The Producer wants to add 6.
+🔴 But the buffer is full.
+🔴 It should not continuously check:
+
+while(buffer.size() == capacity) {
+
+}
+
+🔴 This is busy waiting and wastes CPU.
+
+👉 Instead: wait();
+When a thread calls wait():
+
+Thread
+   ↓
+WAITING
+   ↓
+Releases Monitor
+   ↓
+Another Thread can acquire Monitor
+
+🎗️ 27.9 Why while Instead of if?
+
+👉 Wrong
+if(buffer.size() == capacity) {
+    wait();
+}
+
+👉 Correct
+while(buffer.size() == capacity) {
+    wait();
+}
+
+👉 Similarly for Consumer:
+
+while(buffer.isEmpty()) {
+    wait();
+}
+
+Why?
+
+The condition must be checked again after the thread wakes up.
+
+👉 Reasons include:
+🔴 Spurious wakeups
+🔴 Multiple Producers,Multiple Consumers,Another thread changing the buffer state before the awakened thread reacquires the monitor
+
+Therefore:
+
+wait()
+  ↓
+Wake Up
+  ↓
+Re-check Condition
+  ↓
+Can I proceed?
+  ↓
+Yes → Continue
+No  → wait() again
+
+🎗️ 27.10 Why notifyAll()?
+
+👉 After Producer inserts an item:
+
+buffer.offer(itemProduced);
+notifyAll();
+
+🔴 The Consumer may be waiting because the buffer was empty.
+
+👉 Similarly, after Consumer removes an item:
+
+buffer.poll();
+notifyAll();
+
+🔴 The Producer may be waiting because the buffer was full.
+
+Therefore:
+
+Producer adds item
+       ↓
+Buffer state changes
+       ↓
+notifyAll()
+       ↓
+Waiting threads wake
+
+And:
+
+Consumer removes item
+       ↓
+Buffer state changes
+       ↓
+notifyAll()
+       ↓
+Waiting threads wake
+
+🎗️ 27.11 Why notifyAll() Instead of notify()?
+
+👉 With multiple Producers and Consumers:
+
+Producer-1
+Producer-2
+Consumer-1
+Consumer-2
+
+🔴 notify() wakes only one waiting thread.
+🔴 That thread may not be the appropriate one to proceed.
+🔴 notifyAll() wakes all waiting threads, and each thread re-checks its condition.
+
+notifyAll()
+     ↓
+All waiting threads wake
+     ↓
+Each checks its condition
+     ↓
+Correct thread proceeds
+
+🎗️ 27.12 Designing SharedBuffer
+
+The Producer and Consumer should not directly manipulate the queue.
+
+Instead:
+
+Producer
+    ↓
+produce()
+    ↓
+SharedBuffer
+    ↓
+Queue
+    ↑
+SharedBuffer
+    ↑
+consume()
+    ↑
+Consumer
+
+This keeps the queue and synchronization logic inside one class.
+
+🎗️ 27.13 Variables Required
+
+private final Queue buffer;
+private final int capacity;
+
+👉 buffer
+🔴 Stores the produced items.
+
+👉 capacity
+🔴 Defines the maximum number of items that can exist in the buffer.
+
+👉 For example:
+SharedBuffer sharedBuffer = new SharedBuffer(5);
+
+means:
+Maximum Buffer Size = 5
+
+🎗️ 27.14 SharedBuffer Constructor
+
+public SharedBuffer(int capacity) {
+    this.buffer = new LinkedList<>();
+    this.capacity = capacity;
+}
+
+Initially:
+
+Capacity = 5
+Buffer = []
+
+🎗️ 27.15 Implement produce()
+
+Logic
+
+Producer
+   ↓
+Is Buffer Full?
+   ↓
+Yes → wait()
+   ↓
+No
+   ↓
+Add Item
+   ↓
+Print Buffer
+   ↓
+notifyAll()
+
+👉 Implementation
+
+public synchronized void produce(int itemProduced) {
+    while (buffer.size() == capacity) {
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    buffer.offer(itemProduced);
+    System.out.println(Thread.currentThread().getName()+ " produced "+ itemProduced+ " | Buffer : " + buffer);
+    notifyAll();
+}
+
+🎗️ 27.16 Producer Execution
+
+👉 Suppose:
+
+🔴 Capacity = 5
+🔴 Buffer = [1,2,3,4,5]
+🔴 Producer tries to produce 6.
+
+buffer.size() == capacity
+        ↓
+     5 == 5
+        ↓
+      true
+        ↓
+      wait()
+
+🔴 Producer waits.
+🔴 Then Consumer removes an item:
+
+[1,2,3,4,5]
+   ↓
+Consumer removes 1
+   ↓
+[2,3,4,5]
+   ↓
+notifyAll()
+
+🔴 Producer wakes and re-checks:
+
+4 == 5
+   ↓
+false
+
+Now Producer can insert 6.
+[2,3,4,5,6]
+
+🎗️ 27.17 Implement consume()
+
+👉 Logic
+
+Consumer
+ ↓
+Is Buffer Empty?
+ ↓
+Yes → wait()
+ ↓
+No
+ ↓
+Remove Item
+ ↓
+Print Buffer
+ ↓
+notifyAll()
+ ↓
+Return Item
+
+👉 Implementation
+
+public synchronized Object consume() {
+    while (buffer.isEmpty()) {
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    Object poll = buffer.poll();
+    System.out.println(Thread.currentThread().getName()+ " consumed "+ poll+ " | Buffer : "+ buffer);
+    notifyAll();
+    return poll;
+}
+
+🎗️ 27.18 Consumer Execution
+
+👉 Suppose:
+
+🔴 Buffer = []
+🔴 Consumer calls: consume();
+🔴 Condition:
+
+buffer.isEmpty()
+ ↓
+true
+ ↓
+wait()
+
+🔴 Consumer waits.
+🔴 Producer then produces:
+
+Producer produces 1
+ ↓
+[1]
+ ↓
+notifyAll()
+
+🔴 Consumer wakes.
+🔴 It re-checks:
+
+buffer.isEmpty()
+ ↓
+false
+
+🔴 Consumer removes: poll()
+
+Result: 1
+Buffer becomes: []
+
+🎗️ 27.19 Complete SharedBuffer Class
+
+public class SharedBuffer {
+    private final Queue buffer;
+    private final int capacity;
+
+    public SharedBuffer(int capacity) {
+        this.buffer = new LinkedList<>();
+        this.capacity = capacity;
+    }
+
+    public synchronized Object consume() {
+        while (buffer.isEmpty()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        Object poll = buffer.poll();
+
+        System.out.println(Thread.currentThread().getName()+ " consumed "+ poll+ " | Buffer : "+ buffer);
+        notifyAll();
+        return poll;
+    }
+
+    public synchronized void produce(int itemProduced) {
+        while (buffer.size() == capacity) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        buffer.offer(itemProduced);
+        System.out.println(Thread.currentThread().getName()+ " produced "+ itemProduced+ " | Buffer : "+ buffer);
+        notifyAll();
+    }
+}
+
+🎗️ 27.20 Create Producer Thread
+
+The Producer receives the same SharedBuffer object.
+
+public class Producer extends Thread {
+
+    private final SharedBuffer sharedBuffer;
+
+    public Producer(SharedBuffer sharedBuffer) {
+        this.sharedBuffer = sharedBuffer;
+    }
+
+    @Override
+    public void run() {
+
+        for (int i = 1; i <= 10; i++) {
+            sharedBuffer.produce(i);
+        }
+    }
+}
+Responsibility
+Producer
+   ↓
+Generate 1 to 10
+   ↓
+Call produce()
+   ↓
+SharedBuffer
+
+🎗️ 27.21 Create Consumer Thread
+
+👉 The Consumer also receives the same SharedBuffer object.
+
+public class Consumer extends Thread {
+    private final SharedBuffer sharedBuffer;
+
+    public Consumer(SharedBuffer sharedBuffer) {
+        this.sharedBuffer = sharedBuffer;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 1; i <= 10; i++) {
+            sharedBuffer.consume();
+        }
+    }
+}
+
+👉  Responsibility
+Consumer
+   ↓
+Consume 10 items
+   ↓
+Call consume()
+   ↓
+SharedBuffer
+
+🎗️ 27.22 Why Same SharedBuffer Object?
+
+👉 This is extremely important.
+Correct:
+
+SharedBuffer sharedBuffer = new SharedBuffer(5);
+
+Thread consumerThread = new Consumer(sharedBuffer);
+Thread producerThread = new Producer(sharedBuffer);
+
+🔴 Both threads use:
+     SharedBuffer
+          ↓
+       Queue
+       ↙   ↘
+Producer   Consumer
+
+🔴 If we created separate objects:
+
+Producer → Buffer-1
+Consumer → Buffer-2
+
+🔴 They would not share the same queue.
+🔴 Therefore, communication would fail.
+
+🎗️ 27.23 Main Class
+
+public class ProducerConsumerProblem {
+    public static void main(String[] args) {
+
+        SharedBuffer sharedBuffer = new SharedBuffer(5);
+        Thread consumerThread = new Consumer(sharedBuffer);
+
+        Thread producerThread = new Producer(sharedBuffer);
+
+        consumerThread.setName("consumerThread");
+        producerThread.setName("producerThread");
+
+        consumerThread.start();
+        producerThread.start();
+    }
+}
+
+🎗️ 27.24 Complete Project Structure
+
+producer_consumer_problem
+        ├── ProducerConsumerProblem.java
+        ├── Producer.java
+        ├── Consumer.java
+        └── SharedBuffer.java
+
+🎗️ 27.25 Complete Execution Flow
+
+        SharedBuffer
+             │
+        Queue + Capacity
+             │
+      ┌──────┴──────┐
+      ↓             ↓
+  Producer       Consumer
+      ↓             ↓
+  produce()      consume()
+      ↓             ↓
+ Buffer Full?   Buffer Empty?
+    ↓                ↓
+ Yes → wait()     Yes → wait()
+    ↓                ↓
+ Add Item         Remove Item
+    ↓                ↓
+ notifyAll()      notifyAll()
+
+
+🎗️ 27.26 Dry Run
+
+👉 Assume:
+
+🔴 Capacity = 5
+🔴 Producer produces 1 to 10
+🔴 Consumer consumes 10 items
+
+👉 Initially Buffer = []
+🔴 Consumer may execute first.
+
+Consumer
+   ↓
+Buffer Empty
+   ↓
+wait()
+
+🔴 Producer then gets the monitor.
+🔴 Producer produces 1
+🔴 producerThread produced 1 | Buffer : [1]
+
+Then: notifyAll()
+
+🔴 Consumer wakes.
+🔴 Consumer consumes 1
+🔴 consumerThread consumed 1 | Buffer : []
+
+Then: notifyAll()
+
+🔴 Producer produces more items
+🔴 producerThread produced 2 | Buffer : [2]
+🔴 producerThread produced 3 | Buffer : [2,3]
+🔴 producerThread produced 4 | Buffer : [2,3,4]
+🔴 producerThread produced 5 | Buffer : [2,3,4,5]
+🔴 producerThread produced 6 | Buffer : [2,3,4,5,6]
+🔴 Now buffer is full.Producer tries to produce 7.
+
+Buffer Full
+     ↓
+Producer waits
+
+🔴 Consumer removes an item:
+🔴 consumerThread consumed 2 | Buffer : [3,4,5,6]
+
+Then: notifyAll()
+
+🔴 Producer wakes and produces 7.
+🔴 This process continues until all 10 items are produced and consumed.
+
+🎗️ 27.27 Important Observation
+
+👉 The output order is not guaranteed between Producer and Consumer because thread scheduling is controlled by the JVM/OS.
+
+For example:
+
+Producer produces 1
+Consumer consumes 1
+Producer produces 2
+Producer produces 3
+Consumer consumes 2
+...
+
+or:
+
+Consumer waits
+Producer produces 1
+Producer produces 2
+Consumer consumes 1
+...
+
+Both are valid as long as:
+
+✔ No item is consumed before being produced
+✔ Buffer never exceeds capacity
+✔ Consumer waits when buffer is empty
+✔ Producer waits when buffer is full
+
+
+🎗️ 27.28 Producer vs Consumer
+
+---------------------------------------------------
+| Feature         | Producer      | Consumer      |
+| --------------- | ------------- | ------------- |
+| Action          | Insert        | Remove        |
+| Method          | `produce()`   | `consume()`   |
+| Wait Condition  | Buffer Full   | Buffer Empty  |
+| Queue Operation | `offer()`     | `poll()`      |
+| After Operation | `notifyAll()` | `notifyAll()` |
+| Shared Resource | `buffer`      | `buffer`      |
+---------------------------------------------------
+
+🎗️ 27.29 wait() vs sleep()
+
+-----------------------------------------------------------------------------
+| `wait()`                            | `sleep()`                           |
+| ----------------------------------- | ----------------------------------- |
+| Releases monitor                    | Does not release monitor            |
+| Used for thread communication       | Used for delaying execution         |
+| Must be used with monitor ownership | Does not require synchronized block |
+| Thread waits for notification       | Thread waits for specified time     |
+-----------------------------------------------------------------------------
+
+👉Interview Answer
+wait() releases the monitor while waiting, whereas sleep() keeps the monitor if the thread already owns it.
+
+🎗️ 27.30 Busy Waiting vs wait()
+
+--------------------------------------------------------
+| Busy Waiting                  | `wait()`             |
+| ----------------------------- | -------------------- |
+| Continuously checks condition | Waits until notified |
+| Wastes CPU                    | Efficient            |
+| Does not release monitor      | Releases monitor     |
+| Poor approach                 | Preferred approach   |
+--------------------------------------------------------
+👉 Bad
+
+while(buffer.isEmpty()) {
+}
+
+👉 Correct
+
+while(buffer.isEmpty()) {
+    wait();
+}
+
+🎗️ 27.31 Common Mistakes
+❌ Using if instead of while
+❌ Calling wait() outside synchronized
+❌ Forgetting notifyAll()
+❌ Using different SharedBuffer objects
+❌ Creating separate queues for Producer and Consumer
+❌ Using busy waiting
+❌ Forgetting the capacity condition
+❌ Calling run() instead of start()
+
+🎗️ 27.32 Best Practices
+✔ Use one shared buffer
+✔ Use one common monitor
+✔ Always use while before wait()
+✔ Use notifyAll() when multiple Producers/Consumers are possible
+✔ Keep synchronization logic inside SharedBuffer
+✔ Producer should not directly access the queue
+✔ Consumer should not directly access the queue
+
+🎗️ 27.33 Advantages
+✔ Prevents race conditions
+✔ Prevents buffer overflow
+✔ Prevents buffer underflow
+✔ Enables thread communication
+✔ Avoids busy waiting
+✔ Provides controlled access to shared data
+
+🎗️ 27.34 Disadvantages
+❌ More complex than basic synchronization
+❌ Incorrect synchronization can cause deadlocks
+❌ Incorrect notification can cause progress issues
+❌ Multiple threads make debugging harder
+
+🎗️ 27.35 Summary
+
+Producer
+   ↓
+Produces Item
+   ↓
+Shared Buffer
+   ↓
+Consumer
+   ↓
+Consumes Item
+
+👉 Core Conditions
+
+Buffer Full
+     ↓
+Producer → wait()
+
+Buffer Empty
+     ↓
+Consumer → wait()
+
+Producer adds item
+     ↓
+notifyAll()
+
+Consumer removes item
+     ↓
+notifyAll()
+
+👉 Core Synchronization Pattern
+
+Shared Resource
+      ↓
+synchronized
+      ↓
+while(condition)
+      ↓
+wait()
+      ↓
+State Change
+      ↓
+notifyAll()

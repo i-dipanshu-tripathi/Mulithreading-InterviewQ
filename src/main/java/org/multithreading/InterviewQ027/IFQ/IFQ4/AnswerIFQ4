@@ -1,0 +1,3 @@
+✅ 5. Why are produce() and consume() synchronized?
+
+Because both methods access the same shared mutable queue.

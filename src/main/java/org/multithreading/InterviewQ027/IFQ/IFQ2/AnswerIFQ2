@@ -1,0 +1,5 @@
+✅ 2.1 Why does Producer wait?
+Because the buffer is full.
+
+✅ 2.2 Why does Consumer wait?
+Because the buffer is empty.

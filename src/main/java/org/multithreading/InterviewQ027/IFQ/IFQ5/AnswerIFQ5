@@ -1,0 +1,7 @@
+✅ 5.1 Why use while instead of if?
+
+Because after waking, the thread must re-check the condition.
+
+✅ 5.2 Why wait() instead of busy waiting?
+
+Because wait() releases the monitor and avoids unnecessary CPU consumption.

@@ -1,0 +1,8 @@
+✅ 8.1 Can there be multiple Producers?
+Yes.
+
+✅ 8.2 Can there be multiple Consumers?
+Yes.
+
+✅ 8.3 What modern Java class can implement Producer–Consumer more easily?
+BlockingQueue.

@@ -1,0 +1,8 @@
+✅ 6.1 Why notifyAll()?
+Because the buffer state has changed and waiting threads should wake up and re-check their conditions.
+
+✅ 6.2 What happens when the buffer is full?
+Producer calls wait().
+
+✅ 6.3 What happens when the buffer is empty?
+Consumer calls wait().

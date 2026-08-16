@@ -1,0 +1,3 @@
+✅ 3. Why is SharedBuffer shared?
+
+Because both Producer and Consumer must access the same queue.

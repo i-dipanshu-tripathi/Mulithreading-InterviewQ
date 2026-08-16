@@ -1,0 +1,8 @@
+✅ 7.1 Why must Producer and Consumer use the same SharedBuffer object?
+Because they need to share the same queue and synchronize on the same monitor.
+
+✅ 7.2 Why do we use offer()?
+To insert an item into the queue.
+
+✅ 7.3 Why do we use poll()?
+To remove and return the head of the queue.
