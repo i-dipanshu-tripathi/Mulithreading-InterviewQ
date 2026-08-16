@@ -1,0 +1,3 @@
+Q15. What happens if currNumber++ is placed in Zero Thread?
+
+The sequence logic becomes incorrect because Zero would own the number progression instead of only acting as a separator.

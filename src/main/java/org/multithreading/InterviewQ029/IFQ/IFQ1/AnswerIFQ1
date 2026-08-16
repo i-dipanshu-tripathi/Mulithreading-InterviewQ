@@ -1,0 +1,3 @@
+Q1. What is the Zero-Even-Odd problem?
+
+It is a thread coordination problem where one thread prints 0 before another thread prints each sequential number.

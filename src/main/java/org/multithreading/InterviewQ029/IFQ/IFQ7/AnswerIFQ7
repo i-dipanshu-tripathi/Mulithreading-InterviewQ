@@ -1,0 +1,7 @@
+Q7.1 Why use synchronized?
+
+Because both threads access and modify shared state.
+
+Q7.2 Why use wait()?
+
+To suspend a thread when it is not its turn while releasing the monitor.

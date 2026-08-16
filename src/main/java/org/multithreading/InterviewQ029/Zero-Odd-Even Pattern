@@ -1,0 +1,964 @@
+✅️ 29. Zero-Even-Odd Pattern — Two Thread Approach
+
+🎗️ 29.1 Definition
+
+The Zero-Even-Odd problem requires two threads to coordinate and produce the following pattern:
+
+🔴 Zero Thread → prints only 0
+🔴 Even-Odd Thread → prints all numbers sequentially
+
+For: n = 5
+
+👉 Expected output:
+0 1 0 2 0 3 0 4 0 5
+
+The important rule is:
+🔴 Zero must be printed before every number.
+
+🎗️ 29.2 Problem Statement
+
+👉 Given an integer n, create two threads:
+🔴 Zero Thread
+🔴 Even-Odd Thread
+
+The output should follow:
+0 1 0 2 0 3 0 4 0 5
+
+For: limit = 20
+the pattern becomes: 0 1 0 2 0 3 0 4 ... 0 20
+
+🎗️ 29.3 Why Is This Problem Difficult?
+
+The main challenge is thread coordination.
+
+👉 We need to guarantee:
+
+Zero
+  ↓
+Number
+  ↓
+Zero
+  ↓
+Number
+  ↓
+Repeat
+
+🔴 The Zero Thread cannot print twice consecutively.
+🔴 Similarly, the Even-Odd Thread cannot print two numbers consecutively.
+🔴 Therefore, both threads need to know: Whose turn is it?
+
+🎗️ 29.4 Thought Process
+
+Think like this before writing code:
+
+Shared Resource
+      ↓
+Two Threads
+      ↓
+Zero + Number
+      ↓
+Need to alternate execution
+      ↓
+Need shared state
+      ↓
+zeroFlag
+      ↓
+true  → Zero Thread
+false → Even-Odd Thread
+      ↓
+wait()
+      ↓
+Print
+      ↓
+Change Flag
+      ↓
+notifyAll()
+
+🎗️ 29.5 Identify Shared Resource
+
+The shared resource is the SharedResource object.
+
+👉 It contains:
+
+🔴 private boolean zeroFlag;
+🔴 private int currNumber;
+
+Both threads access the same object.
+
+Therefore:
+
+SharedResource
+      ↓
+currNumber
+
+zeroFlag
+      ↓
+Zero Thread + Even-Odd Thread
+
+Synchronization is required.
+
+🎗️ 29.6 Components
+------------------------------------------------------------------------------------------
+| Component              | Responsibility                                                 |
+| ---------------------- | -------------------------------------------------------------- |
+| `SharedResource`       | Maintains shared state and coordinates both threads            |
+| `zeroFlag`             | Determines whether Zero or Even-Odd thread should execute      |
+| `currNumber`           | Stores the current number to be printed                        |
+| `limit`                | Defines the maximum number                                     |
+| `printZero()`          | Prints `0` and transfers control to Even-Odd thread            |
+| `printEvenOdd()`       | Prints the current number and transfers control to Zero thread |
+| `synchronized`         | Provides mutual exclusion                                      |
+| `wait()`               | Makes a thread wait until its turn                             |
+| `notifyAll()`          | Wakes waiting threads after state changes                      |
+| `Zero-Thread`          | Prints `0`                                                     |
+| `Even-Odd-Thread`      | Prints odd and even numbers                                    |
+| `zeroFlag = !zeroFlag` | Alternates execution between the two threads                   |
+| `currNumber++`         | Moves to the next number                                       |
+-------------------------------------------------------------------------------------------
+
+🎗️ 29.7 Shared Variables
+
+👉 We need two important shared variables:
+
+private int currNumber;
+Stores the current number.
+
+👉 Example:
+
+currNumber = 1
+Then: 1 → 2 → 3 → 4 → 5
+
+zeroFlag
+
+private boolean zeroFlag;
+Determines whose turn it is.
+
+zeroFlag = true
+     ↓
+Zero Thread's turn
+
+
+zeroFlag = false
+     ↓
+Even-Odd Thread's turn
+
+🎗️ 29.8 Why Do We Need zeroFlag?
+
+Without zeroFlag, both threads would not have an explicit way to know whose turn it is.
+
+👉 For example:
+currNumber = 2
+
+We know the number is 2, but we also need to know:
+Should Zero print?
+or:
+Should Even-Odd print 2?
+
+The zeroFlag removes this ambiguity.
+
+true
+ ↓
+Zero Thread
+
+false
+ ↓
+Even-Odd Thread
+
+🎗️ 29.9 Initial State
+
+👉 The constructor initializes:
+
+public SharedResource(int currNumber, int limit) {
+    zeroFlag = true;
+    this.currNumber = currNumber;
+    this.limit = limit;
+}
+
+For: new SharedResource(1, 20);
+
+👉 the initial state is:
+
+🔴 currNumber = 1
+🔴 limit = 20
+🔴 zeroFlag = true
+
+Therefore:
+Zero Thread gets the first turn.
+
+🎗️ 29.10 State Transition
+
+👉 The complete state transition is:
+
+zeroFlag = true
+       ↓
+Zero Thread
+       ↓
+Print 0
+       ↓
+zeroFlag = false
+       ↓
+Even-Odd Thread
+       ↓
+Print current number
+       ↓
+currNumber++
+       ↓
+zeroFlag = true
+       ↓
+Zero Thread
+       ↓
+Repeat
+
+So the pattern is:
+ZERO → NUMBER → ZERO → NUMBER → ZERO → NUMBER
+
+🎗️ 29.11 Flow Diagram — Zero Thread
+
+Zero Thread
+     ↓
+Is zeroFlag true?
+     ↓
+   No
+     ↓
+  wait()
+     ↓
+   Yes
+     ↓
+Print 0
+     ↓
+zeroFlag = false
+     ↓
+notifyAll()
+
+🎗️ 29.12 Flow Diagram — Even-Odd Thread
+
+Even-Odd Thread
+       ↓
+Is zeroFlag false?
+       ↓
+      No
+       ↓
+     wait()
+       ↓
+      Yes
+       ↓
+Print currentNumber
+       ↓
+currNumber++
+       ↓
+zeroFlag = true
+       ↓
+notifyAll()
+
+🎗️ 29.13 Why synchronized?
+
+👉 Both methods access the same shared state:
+🔴 zeroFlag
+🔴 currNumber
+
+👉 Therefore:
+public synchronized void printZero()
+and:
+public synchronized void printEvenOdd()
+
+👉 ensure that only one thread executes the critical section at a time.
+Both methods use the same SharedResource object's monitor.
+
+     SharedResource
+           ↓
+        Monitor
+       /       \
+      /         \
+Zero Thread    Even-Odd Thread
+
+🎗️ 29.14 Why wait()?
+
+👉 Suppose:
+
+zeroFlag = false
+The Zero Thread enters.
+It is not its turn.
+
+Therefore:
+
+while (!zeroFlag) {
+    wait();
+}
+
+The thread:
+
+🔴 enters WAITING state
+🔴 releases the monitor
+🔴 allows the other thread to execute
+
+🎗️ 29.15 Why while Instead of if?
+
+👉 Wrong
+
+if (!zeroFlag) {
+    wait();
+}
+
+👉 Correct
+
+while (!zeroFlag) {
+    wait();
+}
+
+After waking up, the thread must re-check the condition.
+
+👉 Reasons:
+🔴 Spurious wakeups
+🔴 Another thread may change the state
+🔴 Multiple threads may be waiting in more complex versions
+
+Therefore:
+
+wait()
+  ↓
+Wake up
+  ↓
+Re-check condition
+  ↓
+Can I proceed?
+  ↓
+Yes → Continue
+No  → wait() again
+
+🎗️ 29.16 Why notifyAll()?
+
+After Zero prints:
+
+zeroFlag = !zeroFlag;
+notifyAll();
+
+The Even-Odd Thread needs to wake up.
+
+Similarly, after Even-Odd prints:
+
+zeroFlag = !zeroFlag;
+notifyAll();
+
+the Zero Thread needs to wake up.
+
+Therefore:
+
+Zero prints
+   ↓
+zeroFlag = false
+   ↓
+notifyAll()
+   ↓
+Even-Odd wakes
+
+
+Even-Odd prints
+   ↓
+zeroFlag = true
+   ↓
+notifyAll()
+   ↓
+Zero wakes
+
+🎗️ 29.17 Why zeroFlag = !zeroFlag?
+
+Instead of writing:
+
+zeroFlag = false;
+
+and:
+
+zeroFlag = true;
+
+we can simply toggle it:
+
+zeroFlag = !zeroFlag;
+
+The states alternate:
+
+true
+ ↓
+false
+ ↓
+true
+ ↓
+false
+ ↓
+true
+
+Therefore:
+
+true  → Zero Thread
+false → Even-Odd Thread
+🎗️ 29.18 Important Point — Who Increments the Number?
+
+Only the Even-Odd Thread increments the number.
+
+currNumber++;
+
+The Zero Thread never increments it.
+
+Why?
+
+Zero is only a separator.
+
+Its responsibility is:
+
+Print 0
+   ↓
+Transfer control
+
+The Even-Odd Thread owns the actual number sequence:
+
+1 → 2 → 3 → 4 → 5
+🎗️ 29.19 Implement printZero()
+public synchronized void printZero()
+        throws InterruptedException {
+
+
+    while (currNumber <= limit) {
+
+
+        while (!zeroFlag) {
+            wait();
+        }
+
+
+        if (currNumber > limit) {
+            break;
+        }
+
+
+        System.out.println(
+                Thread.currentThread().getName()
+                        + " : " + 0
+        );
+
+
+        zeroFlag = !zeroFlag;
+
+
+        notifyAll();
+    }
+}
+Responsibility
+Check turn
+   ↓
+Wait if not Zero's turn
+   ↓
+Print 0
+   ↓
+Toggle flag
+   ↓
+Notify Even-Odd Thread
+🎗️ 29.20 Implement printEvenOdd()
+public synchronized void printEvenOdd()
+        throws InterruptedException {
+
+
+    while (currNumber <= limit) {
+
+
+        while (zeroFlag) {
+            wait();
+        }
+
+
+        if (currNumber > limit) {
+            break;
+        }
+
+
+        System.out.println(
+                Thread.currentThread().getName()
+                        + " : " + currNumber
+        );
+
+
+        zeroFlag = !zeroFlag;
+
+
+        currNumber++;
+
+
+        notifyAll();
+    }
+}
+Responsibility
+Check turn
+   ↓
+Wait if Zero's turn
+   ↓
+Print current number
+   ↓
+Toggle flag
+   ↓
+Increment number
+   ↓
+Notify Zero Thread
+🎗️ 29.21 Complete SharedResource
+package zeroevenodd;
+
+
+public class SharedResource {
+
+
+    private boolean zeroFlag;
+    private int currNumber;
+    private final int limit;
+
+
+    public SharedResource(int currNumber, int limit) {
+        zeroFlag = true;
+        this.currNumber = currNumber;
+        this.limit = limit;
+    }
+
+
+    public synchronized void printZero()
+            throws InterruptedException {
+
+
+        while (currNumber <= limit) {
+
+
+            while (!zeroFlag) {
+                wait();
+            }
+
+
+            if (currNumber > limit) {
+                break;
+            }
+
+
+            System.out.println(
+                    Thread.currentThread().getName()
+                            + " : " + 0
+            );
+
+
+            zeroFlag = !zeroFlag;
+
+
+            notifyAll();
+        }
+    }
+
+
+    public synchronized void printEvenOdd()
+            throws InterruptedException {
+
+
+        while (currNumber <= limit) {
+
+
+            while (zeroFlag) {
+                wait();
+            }
+
+
+            if (currNumber > limit) {
+                break;
+            }
+
+
+            System.out.println(
+                    Thread.currentThread().getName()
+                            + " : " + currNumber
+            );
+
+
+            zeroFlag = !zeroFlag;
+
+
+            currNumber++;
+
+
+            notifyAll();
+        }
+    }
+}
+🎗️ 29.22 Create Zero Runnable
+
+The Zero Runnable calls:
+
+sharedResource.printZero();
+Runnable zeroRunnable = () -> {
+    try {
+        sharedResource.printZero();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+};
+🎗️ 29.23 Create Even-Odd Runnable
+
+The Even-Odd Runnable calls:
+
+sharedResource.printEvenOdd();
+Runnable evenOddRunnable = () -> {
+    try {
+        sharedResource.printEvenOdd();
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+};
+🎗️ 29.24 Create Threads
+Thread zeroThread =
+        new Thread(zeroRunnable, "Zero-Thread");
+
+
+Thread evenOddThread =
+        new Thread(evenOddRunnable, "Even-Odd-Thread");
+
+We now have:
+
+Zero-Thread
+     ↓
+printZero()
+
+
+Even-Odd-Thread
+     ↓
+printEvenOdd()
+🎗️ 29.25 Complete Main Class
+package zeroevenodd;
+
+
+public class Main {
+
+
+    public static void main(String[] args) {
+
+
+        SharedResource sharedResource =
+                new SharedResource(1, 20);
+
+
+        Runnable zeroRunnable = () -> {
+            try {
+                sharedResource.printZero();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        };
+
+
+        Runnable evenOddRunnable = () -> {
+            try {
+                sharedResource.printEvenOdd();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        };
+
+
+        Thread zeroThread =
+                new Thread(zeroRunnable, "Zero-Thread");
+
+
+        Thread evenOddThread =
+                new Thread(evenOddRunnable, "Even-Odd-Thread");
+
+
+        zeroThread.start();
+        evenOddThread.start();
+    }
+}
+🎗️ 29.26 Complete Project Structure
+zeroevenodd
+    │
+    ├── Main.java
+    │
+    └── SharedResource.java
+🎗️ 29.27 Complete Execution Flow
+                  SharedResource
+                         │
+              ┌──────────┴──────────┐
+              ↓                     ↓
+        Zero-Thread          Even-Odd-Thread
+              ↓                     ↓
+         printZero()          printEvenOdd()
+              ↓                     ↓
+       zeroFlag = true?      zeroFlag = false?
+              ↓                     ↓
+            Print 0             Print number
+              ↓                     ↓
+      zeroFlag = false        currNumber++
+              ↓                     ↓
+          notifyAll()         zeroFlag = true
+                                    ↓
+                               notifyAll()
+🎗️ 29.28 Dry Run
+
+Assume:
+
+currNumber = 1
+limit = 5
+zeroFlag = true
+Step 1 — Zero Thread
+zeroFlag = true
+        ↓
+Print 0
+        ↓
+zeroFlag = false
+        ↓
+notifyAll()
+
+Output:
+
+0
+Step 2 — Even-Odd Thread
+zeroFlag = false
+        ↓
+Print 1
+        ↓
+currNumber = 2
+        ↓
+zeroFlag = true
+        ↓
+notifyAll()
+
+Output:
+
+0 1
+Step 3 — Zero Thread
+zeroFlag = true
+        ↓
+Print 0
+        ↓
+zeroFlag = false
+        ↓
+notifyAll()
+
+Output:
+
+0 1 0
+Step 4 — Even-Odd Thread
+zeroFlag = false
+        ↓
+Print 2
+        ↓
+currNumber = 3
+        ↓
+zeroFlag = true
+        ↓
+notifyAll()
+
+Output:
+
+0 1 0 2
+
+The same process continues:
+
+0 1 0 2 0 3 0 4 0 5
+🎗️ 29.29 State Transition Diagram
+              START
+                │
+                ▼
+        zeroFlag = true
+                │
+                ▼
+         Zero-Thread
+                │
+             Print 0
+                │
+        zeroFlag = false
+                │
+                ▼
+       Even-Odd-Thread
+                │
+        Print currentNumber
+                │
+          currNumber++
+                │
+         zeroFlag = true
+                │
+                ▼
+         Zero-Thread
+                │
+                ▼
+              Repeat
+
+The complete pattern is:
+
+ZERO → NUMBER → ZERO → NUMBER → ZERO → NUMBER
+🎗️ 29.30 Why Doesn't the Even-Odd Thread Need Separate Odd and Even Logic?
+
+Because this implementation does not have separate Odd and Even threads.
+
+The same thread:
+
+Even-Odd-Thread
+
+prints:
+
+1
+2
+3
+4
+5
+...
+
+It doesn't need to check:
+
+currNumber % 2
+
+because its only responsibility is:
+
+Print the current number whenever zeroFlag == false.
+
+Therefore, the pattern automatically becomes:
+
+0 1
+0 2
+0 3
+0 4
+...
+🎗️ 29.31 Why Is This Simpler Than the Three-Thread Approach?
+Three-Thread Approach
+Zero
+Odd
+Even
+
+Requires:
+
+ZERO
+ODD
+EVEN
+
+as separate states.
+
+Your Two-Thread Approach
+Zero
+Even-Odd
+
+requires only:
+
+true  → Zero
+false → Even-Odd
+
+Therefore:
+
+
+
+🎗️ 29.32 Why notifyAll() Instead of notify()?
+
+Even though this implementation has only two threads, notifyAll() is a good choice because it clearly expresses:
+
+The shared state has changed; all waiting threads should re-check their conditions.
+
+Each thread has its own condition:
+
+Zero Thread
+→ !zeroFlag
+
+
+Even-Odd Thread
+→ zeroFlag == false
+
+Only the thread whose condition is satisfied proceeds.
+
+🎗️ 29.33 Why join() Is Not Used Here?
+
+Your current Main starts both threads:
+
+zeroThread.start();
+evenOddThread.start();
+
+but does not call:
+
+zeroThread.join();
+evenOddThread.join();
+
+For this specific console program, the JVM will normally remain alive while these non-daemon worker threads are running.
+
+However, if you want the main thread to explicitly wait for both threads, you can add:
+
+zeroThread.join();
+evenOddThread.join();
+
+This is optional for the synchronization logic itself.
+
+🎗️ 29.34 Common Mistakes
+❌ Using separate SharedResource objects
+❌ Using if instead of while before wait()
+❌ Forgetting notifyAll()
+❌ Forgetting to toggle zeroFlag
+❌ Incrementing currNumber in Zero Thread
+❌ Printing the number before Zero
+❌ Not using synchronized methods
+❌ Using busy waiting
+
+🎗️ 29.35 Best Practices
+✔ Use one shared SharedResource object
+✔ Keep shared state inside SharedResource
+✔ Use one monitor
+✔ Use while before wait()
+✔ Change shared state before notifyAll()
+✔ Zero Thread only prints 0
+✔ Even-Odd Thread owns currNumber
+✔ Use boolean flag for this simple two-thread pattern
+
+🎗️ 29.36 Components
+--------------------------------------------------------------------------------
+| Component              | Responsibility                                      |
+| ---------------------- | --------------------------------------------------- |
+| `SharedResource`       | Maintains shared state and coordinates both threads |
+| `zeroFlag`             | Determines whose turn it is                         |
+| `currNumber`           | Stores the current number                           |
+| `limit`                | Maximum number to print                             |
+| `printZero()`          | Prints `0`                                          |
+| `printEvenOdd()`       | Prints the current number                           |
+| `synchronized`         | Provides mutual exclusion                           |
+| `wait()`               | Makes a thread wait for its turn                    |
+| `notifyAll()`          | Wakes waiting threads                               |
+| `Zero-Thread`          | Executes `printZero()`                              |
+| `Even-Odd-Thread`      | Executes `printEvenOdd()`                           |
+| `zeroFlag = !zeroFlag` | Alternates between the two threads                  |
+| `currNumber++`         | Moves to the next number                            |
+--------------------------------------------------------------------------------
+
+🎗️ 29.39 Disadvantages
+❌ Uses manual synchronization
+❌ Incorrect flag handling can cause deadlock
+❌ Incorrect notification can stop progress
+❌ More complex than using higher-level concurrency utilities
+🎗️ 29.40 Summary
+Two Threads
+     ↓
+Zero + Even-Odd
+     ↓
+One Shared Resource
+     ↓
+currNumber + zeroFlag
+     ↓
+zeroFlag = true
+     ↓
+Zero prints 0
+     ↓
+zeroFlag = false
+     ↓
+Even-Odd prints number
+     ↓
+currNumber++
+     ↓
+zeroFlag = true
+     ↓
+Repeat
+Core Pattern
+ZERO
+ ↓
+NUMBER
+ ↓
+ZERO
+ ↓
+NUMBER
+ ↓
+ZERO
+ ↓
+NUMBER
+
+Output:
+
+0 1 0 2 0 3 0 4 0 5

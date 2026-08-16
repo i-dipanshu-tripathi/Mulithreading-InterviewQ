@@ -1,0 +1,3 @@
+Q6. Why use while instead of if?
+
+Because the condition must be re-checked after waking from wait().

@@ -1,0 +1,7 @@
+Q5.1 Who increments currNumber?
+
+Only the Even-Odd Thread.
+
+Q5.2 Why doesn't Zero Thread increment currNumber?
+
+Because Zero only prints the separator 0; the Even-Odd Thread owns the number sequence.

@@ -1,0 +1,3 @@
+Q3. Why do we need zeroFlag?
+
+To explicitly determine whether it is the Zero Thread's turn or the Even-Odd Thread's turn.

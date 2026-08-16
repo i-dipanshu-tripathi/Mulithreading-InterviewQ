@@ -1,0 +1,10 @@
+Q2.1 How many threads are used in this implementation?
+
+Two:
+
+Zero-Thread
+Even-Odd-Thread
+
+Q2.2 Why is it called Even-Odd Thread?
+
+Because the same thread prints both odd and even numbers.

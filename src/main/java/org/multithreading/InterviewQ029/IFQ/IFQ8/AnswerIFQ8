@@ -1,0 +1,8 @@
+Q8.1 Why use notifyAll()?
+
+To wake waiting threads after the shared state changes.
+
+Q8.2 Why not use number % 2?
+
+Because we don't need separate Odd and Even threads. One thread prints every number sequentially.
+

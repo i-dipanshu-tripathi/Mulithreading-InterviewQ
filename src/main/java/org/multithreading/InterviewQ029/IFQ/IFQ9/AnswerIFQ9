@@ -1,0 +1,3 @@
+Q14. What happens if zeroFlag is never changed?
+
+The other thread will remain waiting forever, causing the program to stop making progress.

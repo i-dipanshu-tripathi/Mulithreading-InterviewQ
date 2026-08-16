@@ -1,0 +1,11 @@
+Q4.1 What does zeroFlag = true mean?
+
+It means:
+
+Zero Thread should execute.
+
+Q4.2 What does zeroFlag = false mean?
+
+It means:
+
+Even-Odd Thread should execute.
