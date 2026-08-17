@@ -1,0 +1,2350 @@
+✅ 31. Print ABC Sequentially Using 3 Threads (A → B → C)
+
+🎗️ 31.1 Definition
+The ABC Cyclic Pattern is a multithreading synchronization problem where three threads must print A, B, and C in strict cyclic order.
+
+The required sequence is:
+A → B → C → A → B → C → A → B → C ...
+
+For exactly N repetitions.
+Example
+
+If: N = 3
+Expected output: ABCABCABC
+
+❌ Invalid Outputs
+
+🔴 AABBCC
+🔴 AAABBBCCC
+🔴 ABCCBA
+🔴 ACBACB
+
+✔ Only valid sequence
+🔴 ABCABCABC
+
+The important point is that three independent threads must coordinate with each other to maintain one strict sequence.
+
+🎗️ 31.2 Problem Statement
+
+We have three threads:
+
+🔴 Thread-A
+🔴 Thread-B
+🔴 Thread-C
+
+Each thread has only one responsibility.
+
+Thread-A
+   ↓
+Print A
+
+Thread-B
+   ↓
+Print B
+
+Thread-C
+   ↓
+Print C
+
+🔴 The threads must cooperate to produce: ABCABCABC... for exactly N repetitions.
+
+🎗️ 31.3 Threads
+
+There are exactly three threads.
+
+Thread	Responsibility
+Thread-A	Print A
+Thread-B	Print B
+Thread-C	Print C
+
+The threads don't decide randomly when to print.
+Instead, they follow a shared state.
+
+Thread-A
+    ↓
+    A
+    ↓
+Thread-B
+    ↓
+    B
+    ↓
+Thread-C
+    ↓
+    C
+    ↓
+Thread-A
+
+Therefore: A → B → C → A → B → C
+
+
+🎗️ 31.4 Why Is This Asked?
+
+This is a very common thread synchronization interview problem.
+The interviewer wants to check whether you understand how multiple threads can coordinate when there is no numerical condition such as:
+
+number % 2
+or:
+number % 3
+or:
+number % threadCount
+
+Compare
+
+Odd-Even: number % 2
+Remainder Problem: number % 3
+ABC Pattern: No number condition
+
+Instead, we have: Current Turn
+
+👉 The question becomes:
+Which thread is allowed to execute now?
+The answer is determined by the shared turn state.
+
+🎗️ 31.5 Thought Process
+
+Before writing code, think about the sequence.
+
+We need:
+
+A
+↓
+B
+↓
+C
+↓
+A
+↓
+B
+↓
+C
+↓
+Repeat
+
+Now ask:
+
+What determines who prints?
+
+Not: Current Number
+Not: Remainder
+
+Not: Odd / Even
+Instead: Current Turn
+
+Therefore:
+
+Shared Turn
+    ↓
+Who should print?
+    ↓
+A / B / C
+
+🎗️ 31.6 State Machine
+
+The ABC problem is naturally represented as a cyclic state machine.
+
+There are only three states:
+
+A
+↓
+B
+↓
+C
+↓
+A
+
+Visualization:
+
+             A
+             │
+             ▼
+             B
+             │
+             ▼
+             C
+             │
+             ▼
+             A
+             │
+             ▼
+             B
+             │
+             ▼
+             C
+
+👉 The important property is:
+🔴 After C, the state must return to A.
+
+👉 Therefore the state transition is:
+
+A → B
+B → C
+C → A
+
+This is why it is called a: Cyclic State Machine
+
+🎗️ 31.7 Shared State
+
+The three threads need a common state.
+
+👉 The important variables are:
+🔴 turn
+🔴 count
+🔴 limit
+
+👉 turn : Determines which thread is currently allowed to print. Possible values: A B C
+👉 count Tracks how many complete: ABC cycles have been completed.
+👉 limit :  Defines how many times: ABC must be printed.
+
+Therefore:
+
+Shared State
+     ↓
+ ┌───────────┐
+ │ turn      │
+ │ count     │
+ │ limit     │
+ └───────────┘
+
+🎗️ 31.8 Why Is Count Needed?
+
+Suppose: limit = 3
+
+We need: ABCABCABC
+
+How does the program know when to stop?
+We need a counter.
+
+Initially: count = 0
+
+After first complete cycle: ABC
+we get: count = 1
+
+After second cycle: ABC
+we get: count = 2
+
+After third cycle: ABC
+we get: count = 3
+
+Now: count == limit
+Therefore execution is complete.
+
+Flow
+
+count = 0
+ ↓
+ABC
+ ↓
+count = 1
+ ↓
+ABC
+ ↓
+count = 2
+ ↓
+ABC
+ ↓
+count = 3
+ ↓
+DONE
+
+🎗️ 31.9 Why Is Only C Responsible for Count?
+
+This is one of the most important interview questions.
+
+👉 Consider one complete cycle: A → B → C
+🔴 When A finishes: A the cycle is incomplete.
+🔴 When B finishes: AB the cycle is still incomplete.
+🔴 Only after C: ABC has one complete iteration finished.
+
+👉Therefore:
+
+🔴 A → incomplete cycle
+🔴 B → incomplete cycle
+🔴 C → complete cycle
+
+So:
+C
+↓
+count++ is the natural design.
+
+Important : count represents: Number of complete ABC cycles
+It does not represent: number of characters printed
+Therefore: C → count++
+
+🎗️ 31.10 Ownership
+
+Each thread owns exactly one state.
+
+Thread-A
+   ↓
+Turn = A
+
+Thread-B
+   ↓
+Turn = B
+
+Thread-C
+   ↓
+Turn = C
+
+This gives us a simple ownership model.
+
+Thread-A
+Can proceed only when:turn == A
+
+Thread-B
+Can proceed only when: turn == B
+
+Thread-C
+Can proceed only when: turn == C
+
+🎗️ 31.11 Initial State
+
+The system must have an initial turn.
+
+We want the sequence to start with: A
+
+Therefore: turn = A
+
+Initially:
+
+turn = A
+count = 0
+limit = N
+
+Visualization:
+
+             Shared State
+                  ↓
+        ┌───────────────────┐
+        │ turn  = A         │
+        │ count = 0         │
+        │ limit = N         │
+        └───────────────────┘
+             ↙    ↓    ↘
+            A     B     C
+
+Only Thread-A can proceed initially.
+
+Thread-B and Thread-C must wait.
+
+🎗️ 31.13 Thread-B Logic
+
+Thread-B checks: Is turn == B?
+
+If NO
+
+Thread-B
+   ↓
+turn != B
+   ↓
+wait()
+
+If YES
+
+Thread-B
+   ↓
+turn == B
+   ↓
+Print B
+   ↓
+turn = C
+   ↓
+notifyAll()
+
+Thread-B transfers control to Thread-C.
+
+🎗️ 31.14 Thread-C Logic
+
+Thread-C checks: Is turn == C?
+
+If NO
+Thread-C
+   ↓
+turn != C
+   ↓
+wait()
+
+If YES
+Thread-C
+   ↓
+turn == C
+   ↓
+Print C
+   ↓
+count++
+   ↓
+turn = A
+   ↓
+notifyAll()
+
+Thread-C completes the cycle and transfers control back to Thread-A.
+
+🎗️ 31.15 Complete Synchronization Flow
+
+The complete flow is:
+
+                 turn = A
+                     │
+                     ▼
+                Thread-A
+                     │
+                Print A
+                     │
+                turn = B
+                     │
+               notifyAll()
+                     │
+                     ▼
+                Thread-B
+                     │
+                Print B
+                     │
+                turn = C
+                     │
+               notifyAll()
+                     │
+                     ▼
+                Thread-C
+                     │
+                Print C
+                     │
+                  count++
+                     │
+                turn = A
+                     │
+               notifyAll()
+                     │
+                     └──────────────┐
+                                    │
+                                    ▼
+                                Thread-A
+
+This repeats until: count == limit
+
+🎗️ 31.16 Complete Flow Diagram
+
+Thread-A
+
+Thread-A
+   ↓
+Turn == A?
+   ↓
+  No
+   ↓
+ wait()
+   ↓
+  Yes
+   ↓
+Print A
+   ↓
+Turn = B
+   ↓
+notifyAll()
+
+Thread-B
+
+Thread-B
+   ↓
+Turn == B?
+   ↓
+  No
+   ↓
+ wait()
+   ↓
+  Yes
+   ↓
+Print B
+   ↓
+Turn = C
+   ↓
+notifyAll()
+
+Thread-C
+
+Thread-C
+   ↓
+Turn == C?
+   ↓
+  No
+   ↓
+ wait()
+   ↓
+  Yes
+   ↓
+Print C
+   ↓
+count++
+   ↓
+Turn = A
+   ↓
+notifyAll()
+
+
+🎗️ 31.17 Why Do We Need synchronized?
+
+All three threads access the same shared state:
+
+turn
+count
+limit
+
+Suppose:
+
+Thread-A
+Thread-B
+Thread-C
+
+🔴 all access: turn at the same time.
+🔴 Without proper synchronization, multiple threads could attempt to inspect or modify the shared state concurrently.
+🔴 That can lead to: Race Condition
+🔴 Therefore, access to the shared state must be protected.
+
+Conceptually:
+
+             Shared State
+                  │
+              Monitor
+           ┌──────┼──────┐
+           ↓      ↓      ↓
+        Thread-A Thread-B Thread-C
+
+Only the thread that owns the monitor can execute the synchronized section.
+
+🎗️ 31.18 Shared Monitor
+
+The three threads must synchronize using the same shared object.
+This is extremely important.
+
+Correct architecture:
+
+              Shared Object
+                   │
+                Monitor
+        ┌──────────┼──────────┐
+        ↓          ↓          ↓
+    Thread-A    Thread-B    Thread-C
+        │          │          │
+        └──────────┼──────────┘
+             Shared State
+
+All three threads communicate through the same synchronization mechanism.
+
+🎗️ 31.19 Why wait()?
+
+Suppose: turn = B and Thread-A gets the monitor.
+Thread-A checks: turn == A
+
+Result: false
+
+Thread-A cannot print.
+
+It should not continuously check:
+
+while(turn != A) {
+    // keep checking
+}
+
+That would be busy waiting.
+
+Instead:wait() is used.
+The thread enters the waiting state.
+
+🎗️ 31.20 What Happens When wait() Is Called?
+
+When a synchronized thread calls wait():
+
+Thread
+   ↓
+wait()
+   ↓
+WAITING
+   ↓
+Releases monitor
+   ↓
+Another thread can acquire monitor
+
+This is important because otherwise the waiting thread could hold the monitor forever.
+
+Example:
+
+Thread-A
+   ↓
+turn != A
+   ↓
+wait()
+   ↓
+Monitor released
+   ↓
+Thread-B can execute
+
+🎗️ 31.21 Why While Instead of If?
+
+This is a very important interview question.
+
+❌ Wrong approach
+if(turn != A) {
+    wait();
+}
+✔ Correct approach
+while(turn != A) {
+    wait();
+}
+
+Why?
+Because after waking up, the thread must re-check the condition.
+A thread waking up does not automatically mean: I am allowed to print.
+It only means: I can compete for the monitor again.
+
+Therefore:
+
+wait()
+   ↓
+Wake Up
+   ↓
+Re-acquire monitor
+   ↓
+Check condition again
+   ↓
+Can I print?
+
+If: Yes → Print
+
+If: No → wait() again
+
+🎗️ 31.22 Spurious Wakeups
+
+A thread waiting with wait() can wake up without the desired state transition.
+This is called a: Spurious Wakeup
+
+Therefore, this pattern is required:
+
+while(condition) {
+    wait();
+}
+
+not:
+
+if(condition) {
+    wait();
+}
+
+The while loop guarantees that the state is validated again before the thread performs its action.
+
+🎗️ 31.23 Why notifyAll()?
+
+After a thread changes the shared state, waiting threads need to be informed.
+
+Example:
+
+Thread-A
+   ↓
+Print A
+   ↓
+turn = B
+   ↓
+notifyAll()
+
+Now Thread-B can wake up and check: turn == B
+
+Similarly:
+
+Thread-B
+   ↓
+Print B
+   ↓
+turn = C
+   ↓
+notifyAll()
+
+Then Thread-C can proceed.
+
+Finally:
+
+Thread-C
+   ↓
+Print C
+   ↓
+turn = A
+   ↓
+notifyAll()
+
+Thread-A can proceed again.
+
+🎗️ 31.24 Why notifyAll() After Every State Transition?
+
+Because every print causes a state transition.
+A → B requires notification.
+B → C requires notification.
+C → A requires notification.
+
+Therefore:
+
+Print A
+   ↓
+turn = B
+   ↓
+notifyAll()
+
+
+Print B
+   ↓
+turn = C
+   ↓
+notifyAll()
+
+
+Print C
+   ↓
+turn = A
+   ↓
+notifyAll()
+
+
+🎗️ 31.25 Why notifyAll() Instead of notify()?
+
+Suppose all three threads are involved.
+
+At some point, multiple threads could be waiting.
+
+Thread-A → WAITING
+Thread-B → WAITING
+Thread-C → RUNNING
+
+If only:
+
+notify()
+
+is used, only one waiting thread is awakened.
+
+That awakened thread might not be the thread whose turn it is.
+
+With:
+
+notifyAll()
+
+all waiting threads are awakened.
+
+Each thread then checks:
+
+Is it my turn?
+
+Therefore:
+
+notifyAll()
+      ↓
+All waiting threads wake
+      ↓
+Each re-checks turn
+      ↓
+Correct thread proceeds
+
+🎗️ 31.26 State Transition Table
+-------------------------------------------------------
+| Current Turn | Thread Allowed | Action  | Next Turn |
+| ------------ | -------------- | ------- | --------- |
+| A            | Thread-A       | Print A | B         |
+| B            | Thread-B       | Print B | C         |
+| C            | Thread-C       | Print C | A         |
+-------------------------------------------------------
+
+Notice the cyclic nature:
+
+A → B
+B → C
+C → A
+
+🎗️ 31.27 Complete State Machine
+
+             ┌─────────────┐
+             │             │
+             ▼             │
+          Turn = A         │
+             │             │
+          Print A          │
+             │             │
+          Turn = B         │
+             │             │
+             ▼             │
+          Print B          │
+             │             │
+          Turn = C         │
+             │             │
+             ▼             │
+          Print C          │
+             │             │
+          count++          │
+             │             │
+          Turn = A ────────┘
+
+This is the fundamental logic of the entire problem.
+
+🎗️ 31.28 Internal JVM Working — First Cycle
+
+Initially:
+
+turn = A
+count = 0
+Step 1 — Thread-A
+
+Thread-A acquires the monitor.
+
+turn == A
+
+Therefore it prints:
+
+A
+
+Then:
+
+turn = B
+
+and:
+
+notifyAll()
+Step 2 — Thread-B
+
+Thread-B gets the opportunity to execute.
+
+turn == B
+
+Therefore:
+
+B
+
+Then:
+
+turn = C
+
+and:
+
+notifyAll()
+Step 3 — Thread-C
+
+Thread-C checks:
+
+turn == C
+
+Therefore:
+
+C
+
+Now:
+
+count++
+
+So:
+
+count = 1
+
+Then:
+
+turn = A
+
+and:
+
+notifyAll()
+
+One complete cycle is finished.
+
+ABC
+🎗️ 31.29 Internal JVM Working — Second Cycle
+
+Now:
+
+turn = A
+count = 1
+
+Again:
+
+Thread-A
+   ↓
+Print A
+   ↓
+turn = B
+
+Then:
+
+Thread-B
+   ↓
+Print B
+   ↓
+turn = C
+
+Then:
+
+Thread-C
+   ↓
+Print C
+   ↓
+count++
+
+Now:
+
+count = 2
+
+Then:
+
+turn = A
+
+Output:
+
+ABCABC
+🎗️ 31.30 Execution Until Limit
+
+Suppose:
+
+limit = 3
+
+Execution:
+
+Initial:
+turn = A
+count = 0
+
+
+Cycle 1:
+A → B → C
+count = 1
+
+
+Cycle 2:
+A → B → C
+count = 2
+
+
+Cycle 3:
+A → B → C
+count = 3
+
+
+DONE
+
+Final output:
+
+ABCABCABC
+🎗️ 31.31 Memory Diagram
+
+All three threads access the same shared state.
+
+                         HEAP
+
+
+              ┌───────────────────────┐
+              │                       │
+              │       turn = A        │
+              │       count = 0       │
+              │       limit = N       │
+              │                       │
+              │    Shared Monitor     │
+              │                       │
+              └───────────────────────┘
+                   ▲       ▲       ▲
+                   │       │       │
+                   │       │       │
+                Thread-A Thread-B Thread-C
+
+The important point is:
+
+There is one shared state, not one state per thread.
+
+🎗️ 31.32 Why One Shared Object?
+
+Suppose we create:
+
+SharedObject-1
+SharedObject-2
+SharedObject-3
+
+and give each thread a different object.
+
+Then:
+
+Thread-A → Object-1
+Thread-B → Object-2
+Thread-C → Object-3
+
+They don't share the same monitor or state.
+
+Communication will not work correctly.
+
+Correct design
+                  Shared Object
+                       │
+          ┌────────────┼────────────┐
+          ↓            ↓            ↓
+      Thread-A      Thread-B      Thread-C
+
+All threads must communicate through the same shared synchronization object.
+
+🎗️ 31.33 ABC Cycle vs Individual Characters
+
+A common conceptual mistake is to consider:
+
+A
+
+as one complete iteration.
+
+That's incorrect.
+
+The actual unit of work is:
+
+ABC
+
+Therefore:
+
+A → partial
+AB → partial
+ABC → complete
+
+This is why:
+
+count++
+
+belongs logically after C.
+
+🎗️ 31.34 Termination Condition
+
+The program needs to stop after exactly N repetitions.
+
+The termination condition is conceptually:
+
+count == limit
+
+For:
+
+limit = 5
+
+we need:
+
+ABC
+ABC
+ABC
+ABC
+ABC
+
+Therefore:
+
+count = 5
+
+Execution is complete.
+
+The important point is:
+
+count represents complete cycles, not individual print operations.
+
+🎗️ 31.35 Why There Is No Number-Based Condition?
+
+In many multithreading problems, we have a number:
+
+1, 2, 3, 4, 5...
+
+Then we can use:
+
+number % 2
+
+or:
+
+number % 3
+
+But ABC has no such number.
+
+The only meaningful state is:
+
+A
+B
+C
+
+Therefore the synchronization condition becomes:
+
+turn
+
+This makes the problem a pure state-based synchronization problem.
+
+🎗️ 31.36 Enum as the Ideal Representation
+
+There are three states:
+
+A
+B
+C
+
+Therefore, conceptually, an enum is an ideal representation.
+
+A
+B
+C
+
+Why?
+
+Because the state has exactly three valid values.
+
+It prevents meaningless states such as:
+
+D
+X
+123
+NULL
+
+from representing a valid turn.
+
+🎗️ 31.37 Why Not Boolean?
+
+A Boolean has only:
+
+true
+false
+
+That works well for two-state problems.
+
+For example:
+
+Foo
+Bar
+
+can conceptually use:
+
+true / false
+
+But ABC has:
+
+A
+B
+C
+
+which means:
+
+3 states
+
+Therefore:
+
+Boolean → not natural
+Enum → natural
+
+
+🎗️ 31.38 Comparison With FooBar
+
+| Feature              | FooBar           | ABC           |
+| -------------------- | ---------------- | ------------- |
+| Threads              | 2                | 3             |
+| States               | 2                | 3             |
+| Sequence             | Foo → Bar        | A → B → C     |
+| State Representation | Boolean can work | Enum is ideal |
+| Cycle                | FooBar           | ABC           |
+| Cycle Completion     | Bar              | C             |
+| Counter Update       | After Bar        | After C       |
+| Transition           | Foo → Bar → Foo  | A → B → C → A |
+
+
+Conceptually:
+
+Foo → Bar → Foo
+
+becomes:
+
+A → B → C → A
+
+🎗️ 31.39 Comparison With Odd-Even
+Odd-Even
+Current Number
+      ↓
+number % 2
+      ↓
+Odd / Even
+ABC
+Current Turn
+      ↓
+A / B / C
+
+Therefore:
+
+Odd-Even
+    ↓
+Mathematical State
+
+
+ABC
+    ↓
+Explicit Turn State
+🎗️ 31.40 Comparison With Remainder Problem
+Remainder Problem
+
+For three threads:
+
+number % 3
+
+determines the responsible thread.
+
+Conceptually:
+
+0 → Thread-0
+1 → Thread-1
+2 → Thread-2
+ABC Pattern
+
+There is no number.
+
+Instead:
+
+turn = A
+turn = B
+turn = C
+
+Therefore:
+
+Remainder Problem
+        ↓
+Calculated Turn
+
+
+ABC Pattern
+        ↓
+Explicit Turn
+🎗️ 31.41 Why Deadlock Can Occur?
+
+Incorrect turn management can cause a deadlock.
+
+Suppose:
+
+Thread-A
+
+prints A but mistakenly does:
+
+turn = C
+
+instead of:
+
+turn = B
+
+Now:
+
+Thread-B
+   ↓
+turn != B
+   ↓
+wait()
+
+Thread-C may execute.
+
+If further state transitions are incorrect, the system can reach a state where no thread can make progress.
+
+Therefore:
+
+Every state transition must point to the correct next state.
+
+Correct:
+
+A → B
+B → C
+C → A
+🎗️ 31.42 Common Mistake — Increment Count in A
+❌ Wrong
+A
+↓
+count++
+
+Why wrong?
+
+Because:
+
+A
+
+does not represent a complete cycle.
+
+The cycle is:
+
+ABC
+
+Therefore the count would become incorrect.
+
+✔ Correct
+C
+↓
+count++
+🎗️ 31.43 Common Mistake — Increment Count in B
+
+Similarly:
+
+AB
+
+is not a complete iteration.
+
+Therefore:
+
+B → count++
+
+is incorrect.
+
+Only:
+
+ABC
+
+represents one complete repetition.
+
+🎗️ 31.44 Common Mistake — Forgetting C → A
+
+Suppose we implement:
+
+A → B
+B → C
+
+but forget:
+
+C → A
+
+Then after:
+
+ABC
+
+the system has no valid next state.
+
+Therefore the cyclic pattern breaks.
+
+The critical transition is:
+
+C → A
+🎗️ 31.45 Common Mistake — Using if Instead of while
+❌ Incorrect
+if(turn != A)
+    wait();
+✔ Correct
+while(turn != A)
+    wait();
+
+Because after waking:
+
+condition must be checked again
+
+This protects against:
+
+Spurious wakeups
+Another thread changing the state
+Multiple waiting threads competing for the monitor
+🎗️ 31.46 Common Mistake — Forgetting notifyAll()
+
+Suppose Thread-A executes:
+
+Print A
+turn = B
+
+but does not notify waiting threads.
+
+Thread-B may remain waiting.
+
+The state says:
+
+turn = B
+
+but Thread-B may not get an opportunity to continue.
+
+Therefore state transition should be followed by:
+
+notifyAll()
+🎗️ 31.47 Common Mistake — Using Different Monitors
+
+All three threads must synchronize using the same shared object.
+
+❌ Wrong
+Thread-A → Monitor-1
+Thread-B → Monitor-2
+Thread-C → Monitor-3
+✔ Correct
+             Shared Monitor
+            /      |       \
+           /       |        \
+     Thread-A  Thread-B  Thread-C
+🎗️ 31.48 Common Mistake — Busy Waiting
+❌ Bad
+
+Conceptually:
+
+while(turn != A) {
+    // keep checking
+}
+
+This continuously consumes CPU.
+
+This is called:
+
+Busy Waiting
+✔ Better
+while(turn != A) {
+    wait();
+}
+
+Now the thread waits efficiently until it can re-check the state.
+
+🎗️ 31.49 Common Mistake — Calling run() Instead of start()
+
+A multithreading problem requires actual thread execution.
+
+Calling:
+
+run()
+
+does not create a new thread of execution.
+
+Calling:
+
+start()
+
+starts the thread.
+
+Conceptually:
+
+start()
+   ↓
+New Thread
+   ↓
+run()
+
+Therefore:
+
+start()
+
+should be used when launching Thread-A, Thread-B, and Thread-C.
+
+🎗️ 31.50 Common Mistake — Printing Outside Turn Validation
+
+Every thread must verify:
+
+Is it my turn?
+
+before printing.
+
+For example, Thread-A must never print simply because it acquired the monitor.
+
+It must verify:
+
+turn == A
+
+The monitor guarantees mutual exclusion.
+
+The turn state guarantees correct ordering.
+
+These are two different responsibilities.
+
+🎗️ 31.51 synchronized vs turn
+
+This distinction is extremely important in interviews.
+
+synchronized
+
+Answers:
+
+Who can access the critical section at this moment?
+
+It provides mutual exclusion.
+
+turn
+
+Answers:
+
+Which thread is logically allowed to print now?
+
+It provides ordering.
+
+Therefore:
+
+synchronized
+      ↓
+Mutual Exclusion
+
+
+turn
+      ↓
+Execution Order
+
+Both work together.
+
+🎗️ 31.52 wait() vs notifyAll()
+
+| Operation     | Purpose                               |
+| ------------- | ------------------------------------- |
+| `wait()`      | Put current thread into waiting state |
+| `notifyAll()` | Wake waiting threads                  |
+| `wait()`      | Releases monitor while waiting        |
+| `notifyAll()` | Does not release monitor immediately  |
+| `wait()`      | Used when thread cannot proceed       |
+| `notifyAll()` | Used after state changes              |
+
+Interview answer:
+
+wait() is used when a thread cannot proceed and must release the monitor while waiting.
+notifyAll() is used after changing the shared state to wake waiting threads so they can re-check their conditions.
+
+🎗️ 31.53 wait() vs sleep()
+
+| `wait()`                                | `sleep()`                          |
+| --------------------------------------- | ---------------------------------- |
+| Releases monitor                        | Does not release monitor           |
+| Used for thread communication           | Used for delaying execution        |
+| Must be called while owning the monitor | Does not require monitor ownership |
+| Waits for notification/state change     | Waits for a specified duration     |
+| Part of coordination                    | Part of timing/delay               |
+
+Interview Answer
+
+wait() releases the monitor while waiting, whereas sleep() does not release the monitor if the thread already owns it.
+
+🎗️ 31.54 Busy Waiting vs wait()
+
+| Busy Waiting                       | `wait()`                            |
+| ---------------------------------- | ----------------------------------- |
+| Continuously checks condition      | Thread waits                        |
+| Wastes CPU                         | More efficient                      |
+| Keeps executing                    | Enters waiting state                |
+| Poor synchronization approach      | Appropriate communication mechanism |
+| No monitor release through waiting | Monitor is released by `wait()`     |
+
+Conceptually:
+
+Busy Waiting
+
+
+while(turn != A) {
+}
+
+
+CPU → CPU → CPU → CPU
+
+Whereas:
+
+wait()
+
+
+Thread
+  ↓
+WAITING
+  ↓
+Monitor released
+🎗️ 31.55 Complete Execution Example
+
+Suppose:
+
+N = 4
+
+Initial state:
+
+turn = A
+count = 0
+Cycle 1
+A
+↓
+B
+↓
+C
+
+Now:
+
+count = 1
+turn = A
+
+Output:
+
+ABC
+Cycle 2
+A
+↓
+B
+↓
+C
+
+Now:
+
+count = 2
+
+Output:
+
+ABCABC
+Cycle 3
+A
+↓
+B
+↓
+C
+
+Now:
+
+count = 3
+
+Output:
+
+ABCABCABC
+Cycle 4
+A
+↓
+B
+↓
+C
+
+Now:
+
+count = 4
+
+Output:
+
+ABCABCABCABC
+
+Execution terminates.
+
+🎗️ 31.56 Complete Dry Run Table
+
+Suppose:
+
+N = 3
+
+| Step | Thread | Action  | Turn After Action | Count |
+| ---- | ------ | ------- | ----------------- | ----: |
+| 1    | A      | Print A | B                 |     0 |
+| 2    | B      | Print B | C                 |     0 |
+| 3    | C      | Print C | A                 |     1 |
+| 4    | A      | Print A | B                 |     1 |
+| 5    | B      | Print B | C                 |     1 |
+| 6    | C      | Print C | A                 |     2 |
+| 7    | A      | Print A | B                 |     2 |
+| 8    | B      | Print B | C                 |     2 |
+| 9    | C      | Print C | A                 |     3 |
+
+
+Final:
+
+Output = ABCABCABC
+count = 3
+
+🎗️ 31.57 Core Invariant
+
+A very strong interview concept is the invariant.
+
+At any point:
+
+Only the thread matching turn is allowed to print.
+
+Therefore:
+
+turn = A
+→ only A prints
+
+
+turn = B
+→ only B prints
+
+
+turn = C
+→ only C prints
+
+This invariant guarantees:
+
+A → B → C
+
+and prevents:
+
+A → A
+B → B
+C → C
+🎗️ 31.58 Another Important Invariant
+
+The second invariant is:
+
+count
+
+always represents:
+
+Number of complete ABC cycles already completed.
+
+Therefore:
+
+After A:
+count unchanged
+
+
+After B:
+count unchanged
+
+
+After C:
+count++
+
+This makes the counter semantically meaningful.
+
+🎗️ 31.59 Why C Is the Cycle Boundary
+
+Think of the sequence as:
+
+┌──────────── ABC ────────────┐
+│                             │
+A              B              C
+│              │              │
+Start        Middle         Complete
+                              │
+                              ▼
+                           count++
+
+Therefore C acts as the cycle boundary.
+
+After C:
+
+Cycle complete
+    ↓
+Increment count
+    ↓
+Reset turn to A
+🎗️ 31.60 Generalization
+
+The ABC problem can be generalized.
+
+Instead of:
+
+A
+B
+C
+
+we can have:
+
+A
+B
+C
+D
+E
+...
+N
+
+The basic idea remains the same:
+
+Current State
+      ↓
+Perform Action
+      ↓
+Move to Next State
+      ↓
+Notify Waiting Threads
+      ↓
+Repeat
+
+For ABC:
+
+A → B → C → A
+
+For four states:
+
+A → B → C → D → A
+
+For five states:
+
+A → B → C → D → E → A
+
+This is why the ABC problem is a foundation for more advanced N-thread cyclic synchronization problems.
+
+🎗️ 31.61 Can Semaphore Solve This?
+
+Yes.
+
+The same logical ordering can be implemented using semaphores.
+
+Conceptually:
+
+Semaphore-A
+Semaphore-B
+Semaphore-C
+
+The ownership flows:
+
+A
+↓
+release B
+↓
+B
+↓
+release C
+↓
+C
+↓
+release A
+
+Therefore:
+
+Semaphore
+    ↓
+A → B → C → A
+
+The synchronization mechanism changes, but the state machine remains the same.
+
+🎗️ 31.62 Can ReentrantLock Solve This?
+
+Yes.
+
+The same ABC state machine can be implemented using:
+
+ReentrantLock
+
+and:
+
+Condition
+
+Conceptually:
+
+Lock
+ ↓
+Condition-A
+Condition-B
+Condition-C
+
+The logical flow remains:
+
+A → B → C → A
+
+So the problem is not specifically about wait() and notifyAll().
+
+It is fundamentally about:
+
+Maintaining a strict cyclic state transition between multiple threads.
+
+🎗️ 31.63 Core Synchronization Pattern
+
+The entire problem can be reduced to:
+
+Shared State
+      ↓
+Acquire Monitor
+      ↓
+Check Turn
+      ↓
+Wrong Turn?
+   ↙       ↘
+ Yes        No
+  ↓          ↓
+wait()     Print
+             ↓
+       Change Turn
+             ↓
+         notifyAll()
+             ↓
+          Repeat
+
+For Thread-C:
+
+Print C
+   ↓
+count++
+   ↓
+turn = A
+   ↓
+notifyAll()
+🎗️ 31.64 Advantages
+✔ 1. Pure Synchronization Problem
+
+No mathematical trick is required.
+
+The problem focuses directly on:
+
+Thread Coordination
+✔ 2. Excellent State Machine Example
+
+The sequence:
+
+A → B → C → A
+
+is a simple cyclic state machine.
+
+✔ 3. Easy to Understand
+
+Each thread has exactly one responsibility:
+
+A → Print A
+B → Print B
+C → Print C
+✔ 4. Easy to Generalize
+
+The same design can be extended to:
+
+N threads
+✔ 5. Demonstrates Thread Communication
+
+It tests:
+
+wait()
+notifyAll()
+synchronized
+✔ 6. Demonstrates Shared State
+
+The threads coordinate using:
+
+turn
+count
+limit
+🎗️ 31.65 Disadvantages
+❌ 1. More State Management
+
+Compared with a simple two-thread problem, there are three states.
+
+A
+B
+C
+❌ 2. Incorrect Turn Updates Can Cause Deadlock
+
+A wrong transition can stop the entire cycle.
+
+❌ 3. Notification Errors Can Cause Threads to Remain Waiting
+
+For example, forgetting a notification after a state transition.
+
+❌ 4. Debugging Becomes Harder With More Threads
+
+As the number of threads increases:
+
+3 → 4 → 5 → N
+
+state management becomes more complex.
+
+🎗️ 31.66 Interview Questions
+Q1. How do you print ABC using three threads?
+
+Answer:
+
+Use a shared synchronization object with a turn variable representing A, B, or C. Each thread waits until its turn, prints its character, updates the turn to the next state, and notifies waiting threads.
+
+Q2. Why do you need a turn variable?
+
+Because the turn variable determines:
+
+Which thread is allowed to print.
+
+It enforces:
+
+A → B → C → A
+Q3. Why can't we simply start the three threads one after another?
+
+Because:
+
+start(A)
+start(B)
+start(C)
+
+does not guarantee:
+
+A → B → C
+
+Thread scheduling is controlled by the JVM/OS.
+
+Therefore explicit synchronization is required.
+
+Q4. Why is count needed?
+
+To determine how many complete:
+
+ABC
+
+cycles have been completed and when execution should terminate.
+
+Q5. Why does C increment count?
+
+Because:
+
+ABC
+
+is one complete cycle.
+
+After A:
+
+A
+
+cycle incomplete.
+
+After B:
+
+AB
+
+cycle incomplete.
+
+After C:
+
+ABC
+
+cycle complete.
+
+Therefore:
+
+C → count++
+Q6. Why use enum?
+
+Because the state has exactly three possible values:
+
+A
+B
+C
+
+An enum represents these explicit states naturally.
+
+Q7. Why not use Boolean?
+
+Boolean represents only two states:
+
+true
+false
+
+ABC requires three:
+
+A
+B
+C
+
+Therefore enum is more appropriate.
+
+Q8. Why use while instead of if before wait()?
+
+Because the condition must be checked again after waking.
+
+Reasons include:
+
+Spurious Wakeups
+Multiple Waiting Threads
+State Changes
+Q9. Why use notifyAll()?
+
+Because multiple threads may be waiting.
+
+notifyAll() wakes all waiting threads, allowing each one to re-check whether it is now its turn.
+
+Q10. What happens if we forget C → A?
+
+The cyclic sequence breaks.
+
+Correct transition:
+
+C → A
+
+is mandatory.
+
+Q11. Can Semaphore solve ABC?
+
+Yes.
+
+Use separate semaphores to control:
+
+A → B → C → A
+Q12. Can ReentrantLock solve ABC?
+
+Yes.
+
+ReentrantLock with Condition objects can implement the same state machine.
+
+Q13. Is this a race-condition problem?
+
+It involves shared state and therefore requires synchronization to prevent unsafe concurrent access.
+
+The synchronization also establishes the required ordering.
+
+Q14. Does synchronized alone guarantee ABC order?
+
+No.
+
+synchronized provides mutual exclusion, but it does not by itself establish:
+
+A → B → C
+
+The turn state is responsible for ordering.
+
+Q15. Does thread scheduling guarantee ABC?
+
+No.
+
+The JVM/OS scheduler decides when threads execute.
+
+Explicit synchronization is required to guarantee the output sequence.
+
+Q16. What happens if Thread-B executes before Thread-A?
+
+Thread-B checks:
+
+turn == B?
+
+Initially:
+
+turn = A
+
+Therefore B cannot proceed and waits.
+
+This preserves:
+
+A → B
+Q17. What happens if Thread-C executes first?
+
+Initially:
+
+turn = A
+
+Thread-C checks:
+
+turn == C
+
+which is false.
+
+Therefore C waits.
+
+The same logic prevents C from printing before A and B.
+
+Q18. What is the most important invariant?
+
+Only the thread whose identity matches the current turn is allowed to print.
+
+Q19. What represents one complete iteration?
+ABC
+
+not:
+
+A
+
+and not:
+
+AB
+Q20. What is the state transition?
+A → B
+B → C
+C → A
+🎗️ 31.67 ABC Pattern — Interview Mental Model
+
+When you see this problem in an interview, immediately think:
+
+3 Threads
+    ↓
+3 States
+    ↓
+A / B / C
+    ↓
+Shared State
+    ↓
+turn
+    ↓
+Only correct thread proceeds
+    ↓
+Print
+    ↓
+Move to next state
+    ↓
+notifyAll()
+    ↓
+Repeat
+
+Then identify the cycle boundary:
+
+A → B → C
+          ↓
+      count++
+
+Then:
+
+C → A
+🎗️ 31.68 One-Line Logic for Each Thread
+Thread-A
+Wait for A → Print A → Turn B → Notify
+Thread-B
+Wait for B → Print B → Turn C → Notify
+Thread-C
+Wait for C → Print C → Count++ → Turn A → Notify
+
+This is the entire problem in three lines.
+
+🎗️ 31.69 Complete Architecture
+                    Shared Synchronization Object
+                              │
+                ┌─────────────┴─────────────┐
+                │                           │
+          Shared State                  Monitor
+                │                           │
+        ┌───────┼────────┐                  │
+        │       │        │                  │
+       turn   count    limit                │
+        │       │        │                  │
+        └───────┼────────┘                  │
+                │                           │
+       ┌────────┼────────┐                  │
+       ↓        ↓        ↓                  │
+   Thread-A Thread-B Thread-C               │
+       │        │        │                  │
+       A        B        C                  │
+       │        │        │                  │
+       └────────┼────────┘                  │
+                ↓                           │
+           A → B → C → A                    │
+🎗️ 31.70 Complete Dry-Run Visualization
+
+For:
+
+N = 3
+Initial State
+
+
+turn = A
+count = 0
+limit = 3
+First cycle
+Thread-A
+   ↓
+A
+   ↓
+turn = B
+   ↓
+Thread-B
+   ↓
+B
+   ↓
+turn = C
+   ↓
+Thread-C
+   ↓
+C
+   ↓
+count = 1
+   ↓
+turn = A
+
+Output:
+
+ABC
+Second cycle
+A
+↓
+B
+↓
+C
+↓
+count = 2
+↓
+turn = A
+
+Output:
+
+ABCABC
+Third cycle
+A
+↓
+B
+↓
+C
+↓
+count = 3
+
+Output:
+
+ABCABCABC
+
+Done.
+
+🎗️ 31.71 Core Pattern to Remember
+                 ┌───────────┐
+                 │  Turn = A │
+                 └─────┬─────┘
+                       ↓
+                    Print A
+                       ↓
+                    Turn = B
+                       ↓
+                    Print B
+                       ↓
+                    Turn = C
+                       ↓
+                    Print C
+                       ↓
+                    Count++
+                       ↓
+                    Turn = A
+                       │
+                       └───────────────┐
+                                       │
+                                       ▼
+                                  Repeat
+
+The three essential transitions are:
+
+A → B
+B → C
+C → A
+🎗️ 31.72 Final Summary
+
+The ABC Cyclic Pattern is a three-thread synchronization problem where three threads must print:
+
+A B C
+
+in strict order for exactly N repetitions.
+
+Core Concepts
+Three Threads
+      ↓
+Three States
+      ↓
+A / B / C
+      ↓
+Shared Turn
+      ↓
+A → B → C → A
+Shared Variables
+turn
+count
+limit
+Thread Responsibilities
+Thread-A → Print A
+Thread-B → Print B
+Thread-C → Print C
+Synchronization
+synchronized
+      ↓
+while(condition)
+      ↓
+wait()
+      ↓
+Print
+      ↓
+Change Turn
+      ↓
+notifyAll()
+Cycle Completion
+A
+↓
+B
+↓
+C
+↓
+count++
+State Transition
+A → B
+B → C
+C → A
+Most Important Interview Points
+✔ turn controls ordering
+✔ synchronized provides mutual exclusion
+✔ while is preferred over if before wait()
+✔ wait() releases the monitor
+✔ notifyAll() wakes waiting threads
+✔ C increments count because ABC is one complete cycle
+✔ C must return the turn to A
+✔ enum is ideal for three states
+✔ one shared synchronization object is required
+✔ thread scheduling alone cannot guarantee ABC
+Final Mental Model
+             ABC CYCLIC PATTERN
+
+
+                    A
+                    ↓
+                 Print A
+                    ↓
+                 Turn B
+                    ↓
+                    B
+                    ↓
+                 Print B
+                    ↓
+                 Turn C
+                    ↓
+                    C
+                    ↓
+                 Print C
+                    ↓
+                 Count++
+                    ↓
+                 Turn A
+                    ↓
+                  Repeat
+
+Remember only this:
+A → B → C → A is the state machine, turn controls ownership, count tracks completed ABC cycles, and C marks the completion of one cycle.
+
