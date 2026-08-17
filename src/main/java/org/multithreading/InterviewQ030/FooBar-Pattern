@@ -1,0 +1,423 @@
+FooBar Alternately (LeetCode 1115)
+
+Difficulty: Medium
+
+Interview Frequency: ⭐⭐⭐⭐☆
+
+Companies:
+
+Amazon
+Microsoft
+Google
+Meta
+Adobe
+Oracle
+Bloomberg
+PART 1 — COMPLETE THEORY (NO CODE)
+1. Definition
+
+The FooBar Alternately problem requires two threads to print two different strings in a strict alternating order.
+
+One thread prints:
+
+foo
+
+The other prints:
+
+bar
+
+The output must always be
+
+foobarfoobarfoobar...
+
+for exactly n repetitions.
+
+2. Problem Statement
+
+Given
+
+n = 4
+
+Create two threads.
+
+Thread-1 prints
+
+foo
+
+Thread-2 prints
+
+bar
+
+Expected Output
+
+foobarfoobarfoobarfoobar
+
+or
+
+foo
+bar
+foo
+bar
+foo
+bar
+foo
+bar
+
+depending on the printing format.
+
+3. Why Is This Asked?
+
+The interviewer wants to check whether you can synchronize two threads without relying on numeric conditions.
+
+Unlike Odd–Even or Remainder problems, there is no shared counter used to decide whose turn it is.
+
+The only thing that matters is:
+
+Whose turn is it?
+
+4. Compare with Previous Problems
+Odd–Even
+
+Decision based on
+
+number % 2
+Remainder
+
+Decision based on
+
+number % 3
+Zero-Even-Odd
+
+Decision based on
+
+Turn State
+FooBar
+
+Decision based on
+
+Turn Only
+
+No parity.
+
+No remainder.
+
+No ownership.
+
+Just
+
+Foo
+
+↓
+
+Bar
+
+↓
+
+Foo
+
+↓
+
+Bar
+5. Thought Process
+
+Imagine two people playing table tennis.
+
+Player-A
+
+Hits Ball
+
+↓
+
+Player-B
+
+Hits Ball
+
+↓
+
+Player-A
+
+↓
+
+Player-B
+
+Exactly the same pattern.
+
+6. Shared State
+
+Only one thing is shared.
+
+Foo Turn?
+
+There are only
+
+2 States
+FOO
+
+BAR
+
+One boolean is sufficient.
+
+7. State Machine
+FOO
+
+↓
+
+BAR
+
+↓
+
+FOO
+
+↓
+
+BAR
+
+↓
+
+FOO
+
+Unlike Zero-Even-Odd
+
+there is no third state.
+
+8. Shared Variables
+
+We need
+
+boolean fooTurn;
+
+or
+
+enum Turn{
+FOO,
+BAR
+}
+
+Both are correct.
+
+Because there are only
+
+2 States
+
+a boolean is perfectly fine.
+
+9. Flow Diagram
+Foo Thread
+Is Foo Turn?
+
+↓
+
+No
+
+↓
+
+wait()
+
+↓
+
+Yes
+
+↓
+
+Print Foo
+
+↓
+
+Turn = Bar
+
+↓
+
+notifyAll()
+Bar Thread
+Is Bar Turn?
+
+↓
+
+No
+
+↓
+
+wait()
+
+↓
+
+Yes
+
+↓
+
+Print Bar
+
+↓
+
+Turn = Foo
+
+↓
+
+notifyAll()
+
+Notice
+
+This is the simplest state machine we've seen so far.
+
+10. Internal JVM Working
+
+Initially
+
+fooTurn = true
+
+Foo Thread
+
+↓
+
+Acquire Monitor
+
+↓
+
+Print
+
+foo
+
+↓
+
+fooTurn = false
+
+↓
+
+notifyAll()
+
+Bar Thread
+
+↓
+
+Acquire Monitor
+
+↓
+
+Print
+
+bar
+
+↓
+
+fooTurn = true
+
+↓
+
+notifyAll()
+
+Repeat until n iterations complete.
+
+11. Memory Diagram
+                 Heap
+
++--------------------------+
+| Shared Object            |
+|--------------------------|
+| fooTurn = true           |
+| repetitions = n          |
++--------------------------+
+
+      ▲             ▲
+
+    Foo          Bar
+12. Advantages
+Very easy state machine.
+Excellent for learning thread alternation.
+Demonstrates wait/notify clearly.
+No mathematical conditions.
+13. Disadvantages
+Only models two-thread coordination.
+Doesn't scale naturally to many threads.
+14. Common Mistakes
+
+❌ Using if instead of while.
+
+❌ Forgetting notifyAll().
+
+❌ Initializing the turn incorrectly.
+
+❌ Calling sleep() instead of wait().
+
+❌ Busy waiting.
+
+15. Best Practices
+One shared object.
+One boolean state.
+One monitor.
+Always use while.
+Prefer restoring interrupt status when interrupted.
+16. Interview Questions
+Q1
+
+Why is one boolean enough?
+
+Because there are only two execution states:
+
+Foo
+Bar
+Q2
+
+Can we use an enum?
+
+Yes.
+
+But for only two states,
+
+a boolean is simpler.
+
+Q3
+
+Why not use sleep()?
+
+Because sleep() doesn't release the monitor.
+
+Q4
+
+Why notifyAll()?
+
+It is the safer general pattern. Although notify() would usually work with exactly two threads, interviewers generally prefer notifyAll() because it scales better to future changes.
+
+Q5
+
+Can this be solved using Semaphore?
+
+Yes.
+
+We'll solve it later.
+
+17. Comparison
+Zero-Even-Odd	FooBar
+3 Threads	2 Threads
+3 States	2 States
+enum recommended	Boolean sufficient
+Number + Turn	Turn only
+18. Summary
+Two threads.
+One boolean state.
+Foo prints.
+Switch state.
+Bar prints.
+Switch state.
+Repeat.
+🎯 Interview Answer
+
+Interviewer:
+
+How would you synchronize Foo and Bar?
+
+Perfect Answer:
+
+I would use a shared object with a boolean indicating whether it's Foo's turn. Each thread waits while it's not its turn. After printing, it flips the boolean, calls notifyAll(), and repeats for n iterations. Since there are only two execution states, a boolean is sufficient.
+
+🚀 PART 1 Complete
+
+Notice something:
+
+Problem	State Representation
+Odd–Even	Parity (number % 2)
+Producer–Consumer	Buffer state (empty/full)
+Remainder	number % 3
+Zero-Even-Odd	Three-state turn (ZERO, ODD, EVEN)
+FooBar	Two-state turn (FOO, BAR)
+
+You're now seeing the same underlying synchronization pattern expressed through different state representations.
