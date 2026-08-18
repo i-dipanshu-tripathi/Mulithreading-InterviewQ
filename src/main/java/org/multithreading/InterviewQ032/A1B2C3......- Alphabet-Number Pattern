@@ -1,0 +1,857 @@
+✅ 32. Alphabet–Number Pattern — Two Threads
+🎗️ 32.1 Problem Statement
+Implement a multithreaded program where two threads cooperate to print:
+A1B2C3...
+For:
+repetitions = 3
+Expected output:
+A1B2C3
+👉 One thread prints alphabets:
+A B C
+👉 Another thread prints numbers:
+1 2 3
+👉 The output must alternate:
+A1B2C3
+🎗️ 32.2 Your Design
+Your implementation uses one shared object:
+AlphabetNumber alphabetNumber = new AlphabetNumber(3);
+Both threads use this same object.
+                 AlphabetNumber
+                /              \
+               /                \
+     Alphabet Thread        Number Thread
+            |                     |
+    printAlphabet()         printNumber()
+Therefore, both threads synchronize on the same monitor.
+🎗️ 32.3 Main Components
+Your AlphabetNumber class contains:
+private boolean turn;
+private int number;
+private int repetitions;
+Each variable has a different responsibility.
+Variable	Purpose
+turn	Determines whose turn it is
+number	Current number being printed
+repetitions	Maximum number to print
+
+
+Initially:
+turn = true;
+number = 1;
+repetitions = 3;
+So the initial state is:
+turn = true
+number = 1
+🎗️ 32.4 Meaning of turn
+In your implementation:
+private boolean turn;
+You are using:
+turn = true
+      ↓
+Alphabet Thread's turn
+
+turn = false
+      ↓
+Number Thread's turn
+Therefore:
+true  → Alphabet
+false → Number
+This is the synchronization state.
+🎗️ 32.5 Why number Is Shared in Your Design
+This is an important difference from the previous design.
+Your code has:
+private int number;
+inside the shared AlphabetNumber object.
+Both methods use it.
+Alphabet Thread uses:
+char ch = (char)(number - 1 + 'A');
+Number Thread uses:
+System.out.print(number);
+number = number + 1;
+Therefore:
+number
+  ↑
+  │
+  ├── Alphabet Thread reads it
+  │
+  └── Number Thread reads + modifies it
+So number is genuinely shared state in your implementation.
+🎗️ 32.6 How Alphabet Is Generated
+You don't maintain:
+char current = 'A';
+Instead, you derive the alphabet from number.
+Your expression is:
+char ch = (char)(number - 1 + 'A');
+Let's understand it.
+When:
+number = 1
+we calculate:
+1 - 1 + 'A'
+= 0 + 'A'
+= 'A'
+When:
+number = 2
+we calculate:
+2 - 1 + 'A'
+= 1 + 'A'
+= 'B'
+When:
+number = 3
+we calculate:
+3 - 1 + 'A'
+= 2 + 'A'
+= 'C'
+Therefore:
+number = 1 → A
+number = 2 → B
+number = 3 → C
+🎗️ 32.7 Initial State
+Constructor:
+public AlphabetNumber(int repetitions) {
+    this.turn = true;
+    this.number = 1;
+    this.repetitions = repetitions;
+}
+For:
+new AlphabetNumber(3);
+the state becomes:
+turn = true
+number = 1
+repetitions = 3
+Meaning:
+Alphabet Thread
+      ↓
+Your turn
+      ↓
+Print A
+🎗️ 32.8 Alphabet Thread Logic
+Your method is:
+public synchronized void printAlphabet()
+The flow is:
+Alphabet Thread
+       ↓
+while(number <= repetitions)
+       ↓
+Is turn false?
+       ↓
+YES
+       ↓
+wait()
+       ↓
+NO
+       ↓
+Generate alphabet from number
+       ↓
+Print alphabet
+       ↓
+turn = !turn
+       ↓
+notify()
+🎗️ 32.9 Why while(!turn)?
+Your code:
+while(!turn){
+    try {
+        wait();
+    } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    }
+}
+Meaning:
+Is Alphabet Thread's turn?
+       ↓
+NO
+       ↓
+wait()
+If:
+turn = false
+the Number Thread owns the turn.
+So Alphabet Thread waits.
+If it wakes up, it checks again:
+while(!turn)
+This is correct synchronization practice.
+🎗️ 32.10 Alphabet Thread Prints
+Once:
+turn = true
+the Alphabet Thread proceeds.
+It calculates:
+char ch = (char)(number - 1 + 'A');
+For:
+number = 1
+it gets:
+A
+Then:
+System.out.print(ch);
+Output:
+A
+🎗️ 32.11 Alphabet Thread Changes the Turn
+After printing:
+turn = !turn;
+Initially:
+turn = true
+After:
+turn = !turn;
+it becomes:
+turn = false
+Meaning:
+Alphabet Thread
+      ↓
+finished
+
+Number Thread
+      ↓
+your turn
+Then:
+notify();
+wakes a waiting thread.
+🎗️ 32.12 Number Thread Logic
+Your method:
+public synchronized void printNumber()
+contains:
+while(number<=repetitions){
+    while(turn){
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    ...
+}
+The important condition is:
+while(turn)
+Meaning:
+Is it still Alphabet's turn?
+       ↓
+YES
+       ↓
+Number Thread waits
+When:
+turn = false
+Number Thread can proceed.
+🎗️ 32.13 Number Thread Prints
+After waking:
+System.out.print(number);
+For:
+number = 1
+output becomes:
+A1
+Then:
+number = number + 1;
+So:
+number = 1
+       ↓
+number = 2
+🎗️ 32.14 Number Thread Changes the Turn
+After incrementing:
+turn = !turn;
+Current:
+turn = false
+becomes:
+turn = true
+Therefore:
+Number Thread
+      ↓
+finished
+
+Alphabet Thread
+      ↓
+your turn
+Then:
+notify();
+wakes the waiting Alphabet Thread.
+🎗️ 32.15 Complete Alternation
+Your program essentially performs:
+turn = true
+     ↓
+Alphabet
+     ↓
+turn = false
+     ↓
+Number
+     ↓
+number++
+     ↓
+turn = true
+     ↓
+Alphabet
+     ↓
+turn = false
+     ↓
+Number
+For 3 repetitions:
+A
+A1
+A1B
+A1B2
+A1B2C
+A1B2C3
+Final:
+A1B2C3
+🎗️ 32.16 Dry Run
+Assume:
+repetitions = 3
+turn = true
+number = 1
+Step 1 — Alphabet Thread
+Condition:
+number <= repetitions
+1 <= 3
+True.
+Then:
+!turn
+!true
+false
+So it does not wait.
+Generates:
+1 - 1 + 'A'
+→ A
+Prints:
+A
+Then:
+turn = false
+and:
+notify()
+State:
+turn = false
+number = 1
+🎗️ 32.17 Step 2 — Number Thread
+Number Thread checks:
+number <= repetitions
+1 <= 3
+True.
+Then:
+while(turn)
+Since:
+turn = false
+it does not wait.
+Print:
+1
+Output:
+A1
+Then:
+number = number + 1
+So:
+number = 2
+Then:
+turn = !turn
+So:
+turn = true
+Then:
+notify()
+🎗️ 32.18 Step 3 — Alphabet Thread
+Now:
+turn = true
+number = 2
+Alphabet Thread proceeds.
+Calculates:
+2 - 1 + 'A'
+→ B
+Prints:
+B
+Output:
+A1B
+Then:
+turn = false
+notify()
+🎗️ 32.19 Step 4 — Number Thread
+Number Thread wakes.
+Current state:
+number = 2
+turn = false
+Print:
+2
+Output:
+A1B2
+Then:
+number = 3
+turn = true
+notify()
+🎗️ 32.20 Step 5 — Alphabet Thread
+Current state:
+number = 3
+turn = true
+Calculate:
+3 - 1 + 'A'
+→ C
+Print:
+C
+Output:
+A1B2C
+Then:
+turn = false
+notify()
+🎗️ 32.21 Step 6 — Number Thread
+Number Thread prints:
+3
+Output:
+A1B2C3
+Then:
+number = 4
+turn = true
+Now:
+number <= repetitions
+4 <= 3
+is false.
+Both threads finish.
+Final output:
+A1B2C3
+🎗️ 32.22 Complete State Table
+
+| Step | `turn` | `number` | Thread | Action |
+|---|---|---:|---|---|
+| Initial | `true` | 1 | Alphabet | Print A |
+| 1 | `false` | 1 | Number | Print 1 |
+| 2 | `true` | 2 | Alphabet | Print B |
+| 3 | `false` | 2 | Number | Print 2 |
+| 4 | `true` | 3 | Alphabet | Print C |
+| 5 | `false` | 3 | Number | Print 3 |
+| Final | `true` | 4 | Both | Finish |
+
+Output:
+A1B2C3
+🎗️ 32.23 Why synchronized?
+Your methods are:
+public synchronized void printAlphabet()
+and:
+public synchronized void printNumber()
+Because both are synchronized instance methods, both synchronize on:
+this
+which is the same AlphabetNumber object.
+So:
+AlphabetNumber
+       ↓
+     Monitor
+      /   \
+     /     \
+Alphabet   Number
+Thread     Thread
+Only one thread can execute synchronized code on this object at a time.
+🎗️ 32.24 Why Same AlphabetNumber Object?
+Your main method creates:
+AlphabetNumber alphabetNumber =
+        new AlphabetNumber(3);
+Then both threads receive that same object:
+new Thread(() -> {
+    alphabetNumber.printAlphabet();
+});
+and:
+new Thread(() -> {
+    alphabetNumber.printNumber();
+});
+Therefore:
+             alphabetNumber
+                   |
+             Shared Object
+              /         \
+             /           \
+Alphabet Thread       Number Thread
+This is essential.
+If you created two objects:
+AlphabetNumber-1
+       ↓
+Alphabet Thread
+
+AlphabetNumber-2
+       ↓
+Number Thread
+then:
+turn
+number
+monitor
+would all be different.
+The threads would not coordinate correctly.
+🎗️ 32.25 notify() vs notifyAll() in Your Code
+Your implementation uses:
+notify();
+Because you have exactly:
+1 Alphabet Thread
+1 Number Thread
+there is only one possible waiting counterpart.
+So in this particular design:
+notify();
+can work.
+However, the more general recommendation is:
+notifyAll();
+especially if you later extend the program to multiple Alphabet or Number threads.
+With:
+notifyAll();
+all waiting threads wake and re-check their conditions.
+🎗️ 32.26 Why while Is Important
+You correctly use:
+while(!turn){
+    wait();
+}
+and:
+while(turn){
+    wait();
+}
+This is better than:
+if(!turn){
+    wait();
+}
+because waking up does not automatically mean:
+"It is definitely my turn."
+
+The thread must re-check the state.
+Correct pattern:
+wait()
+  ↓
+wake up
+  ↓
+check condition again
+  ↓
+condition true?
+  ↓
+NO → wait again
+YES → continue
+🎗️ 32.27 Your Extra Termination Check
+You have:
+if(number>repetitions){
+    notify();
+    break;
+}
+This is a defensive termination check.
+Conceptually:
+Thread wakes
+    ↓
+Check whether work is already finished
+    ↓
+YES
+    ↓
+notify()
+    ↓
+break
+It protects against the situation where a thread wakes after the shared number has already exceeded the limit.
+For your current equal-length problem, the outer:
+while(number<=repetitions)
+already handles normal termination.
+But the additional check makes the termination intent explicit.
+🎗️ 32.28 Important Difference From the Earlier Design
+There are two valid ways to design this problem.
+Design 1 — Thread-Owned Sequence State
+Shared:
+    turn
+
+Alphabet Thread:
+    current = 'A'
+
+Number Thread:
+    current = 1
+Here the sequence values are local.
+Design 2 — Your Current Design
+Shared:
+    turn
+    number
+
+Alphabet:
+    derived from number
+
+Number:
+    prints and increments number
+Your design:
+char ch = (char)(number - 1 + 'A');
+means you don't need a separate alphabet counter.
+So your shared state is:
+turn
+number
+rather than just:
+turn
+🎗️ 32.29 Is Sharing number Wrong?
+No.
+Your program is correctly synchronized.
+The important point is:
+number
+is genuinely accessed by both threads.
+Alphabet Thread:
+char ch = (char)(number - 1 + 'A');
+Number Thread:
+System.out.print(number);
+number++;
+Since the methods are synchronized on the same object, access is coordinated.
+So this is a valid solution.
+🎗️ 32.30 Is It the Most Minimal Shared-State Design?
+Not necessarily.
+If we follow strict ownership:
+Alphabet Thread
+    ↓
+current = 'A'
+
+Number Thread
+    ↓
+current = 1
+
+Coordinator
+    ↓
+turn
+then only:
+turn
+needs to be shared.
+Your approach instead uses:
+turn
+number
+as shared state.
+This is still correct, but it gives the shared object more responsibility.
+🎗️ 32.31 Common Mistakes
+❌ Creating separate AlphabetNumber objects
+❌ Using if instead of while
+❌ Calling wait() outside synchronized code
+❌ Forgetting to change turn
+❌ Incrementing number before printing
+❌ Incrementing number in the Alphabet Thread
+❌ Forgetting notify()
+❌ Calling run() instead of start()
+❌ Using busy waiting
+❌ Synchronizing the two methods on different objects
+🎗️ 32.32 Best Practices
+✔ Use one shared AlphabetNumber object.
+✔ Synchronize both methods on the same object.
+✔ Use while around wait().
+✔ Change turn after printing.
+✔ Increment number after printing the number.
+✔ Keep the synchronization logic inside AlphabetNumber.
+✔ Use notifyAll() if the design may later support multiple waiting threads.
+✔ Handle InterruptedException properly.
+🎗️ 32.33 Advantages of Your Approach
+✔ Simple implementation
+✔ No separate alphabet counter
+✔ Alphabet can be derived from number
+✔ Easy to understand
+✔ Only one shared sequence counter
+✔ Demonstrates wait() / notify()
+✔ Demonstrates monitor-based synchronization
+✔ Produces deterministic alternating output
+🎗️ 32.34 Disadvantages of Your Approach
+❌ number is shared between the two threads.
+❌ Alphabet Thread depends on the shared number.
+❌ Less strict separation of thread-owned state.
+❌ notify() is less flexible than notifyAll() for multiple waiting threads.
+❌ Extending the solution to many sequences becomes more complicated.
+
+🎗️ 32.35 wait() vs sleep()
+| `wait()` | `sleep()` |
+|---|---|
+| Releases monitor | Does not release monitor |
+| Used for communication | Used for delay |
+| Must be called while owning monitor | Does not require monitor |
+| Can be awakened through notification | Waits for timeout/interruption |
+| Used for synchronization | Used for timing |
+
+
+👉 Interview Answer
+wait() releases the monitor and puts the thread into the waiting state, while sleep() pauses the thread without releasing a monitor it already owns.
+
+🎗️ 32.36 Busy Waiting vs wait()
+❌ Busy Waiting
+while (!turn) {
+}
+The CPU keeps checking the condition.
+✅ Correct
+while (!turn) {
+    wait();
+}
+The thread releases the monitor and waits efficiently.
+Flow:
+Condition false
+      ↓
+wait()
+      ↓
+Release monitor
+      ↓
+WAITING
+      ↓
+Other thread changes turn
+      ↓
+notify()
+      ↓
+Wake up
+      ↓
+Re-check condition
+🎗️ 32.37 Interview Questions
+Q1. What does turn = true mean?
+Alphabet Thread's turn.
+Q2. What does turn = false mean?
+Number Thread's turn.
+Q3. Why is number shared?
+Because the Alphabet Thread reads it to derive the character and the Number Thread prints and increments it.
+Q4. Why do both methods use synchronized?
+Because both access shared state and must coordinate through the same monitor.
+Q5. What object is used as the monitor?
+The shared AlphabetNumber object, effectively this.
+Q6. Why use while around wait()?
+To re-check the condition after waking.
+Q7. Why is the alphabet calculated using number?
+Because:
+1 → A
+2 → B
+3 → C
+So:
+(char)(number - 1 + 'A')
+generates the corresponding alphabet.
+Q8. Why increment number only in printNumber()?
+Because the number represents the completed pair.
+After:
+A
+we still need:
+1
+Only after printing 1 should we move to:
+B2
+Q9. Can notify() be used here?
+Yes, because there are only two threads and only one counterpart can be waiting.
+Q10. Would notifyAll() also work?
+Yes, and it is generally more flexible if multiple threads are introduced.
+🎗️ 32.38 Core Synchronization Pattern
+Your implementation follows:
+Shared State
+    ↓
+synchronized
+    ↓
+while(condition)
+    ↓
+wait()
+    ↓
+Condition becomes valid
+    ↓
+Print
+    ↓
+Change shared state
+    ↓
+notify()
+Specifically:
+Alphabet Thread
+      ↓
+while(!turn)
+      ↓
+wait()
+      ↓
+Print A/B/C
+      ↓
+turn = false
+      ↓
+notify()
+Number Thread:
+Number Thread
+      ↓
+while(turn)
+      ↓
+wait()
+      ↓
+Print 1/2/3
+      ↓
+number++
+      ↓
+turn = true
+      ↓
+notify()
+🎗️ 32.39 Complete Execution Diagram
+                  AlphabetNumber
+                        │
+              ┌─────────┴─────────┐
+              │                   │
+        Alphabet Thread      Number Thread
+              │                   │
+         turn = true          turn = true
+              │                   │
+           Print A               wait()
+              │                   │
+        turn = false              │
+              │                   │
+           notify() ──────────────┘
+                                  │
+                              Print 1
+                                  │
+                              number++
+                                  │
+                              turn=true
+                                  │
+                              notify()
+                                  │
+                    ┌─────────────┘
+                    ↓
+                 Print B
+                    │
+               turn=false
+                    │
+                 notify()
+                    │
+                    ↓
+                 Print 2
+                    │
+                 number++
+                    │
+                 turn=true
+                    │
+                  ...
+Final:
+A1B2C3
+🎗️ 32.40 Summary
+Your implementation has three important pieces of state:
+turn
+number
+repetitions
+Their responsibilities are:
+turn
+ ↓
+Whose turn?
+
+number
+ ↓
+Current pair number
+
+repetitions
+ ↓
+How many pairs?
+Initial state:
+turn = true
+number = 1
+Alphabet Thread:
+turn == true
+     ↓
+Print alphabet derived from number
+     ↓
+turn = false
+     ↓
+notify()
+Number Thread:
+turn == false
+     ↓
+Print number
+     ↓
+number++
+     ↓
+turn = true
+     ↓
+notify()
+For:
+repetitions = 3
+execution is:
+A
+1
+B
+2
+C
+3
+Final output:
+A1B2C3
+🎯 Interview Insight — Most Important
+Your solution demonstrates an important concurrency idea:
+The threads don't merely need mutual exclusion; they need coordination.
+
+synchronized gives you:
+Mutual Exclusion
+while:
+wait()
+notify()
+give you:
+Thread Coordination
+Together:
+synchronized
+     +
+wait()
+     +
+notify()
+     +
+shared state
+     ↓
+Controlled Alternating Execution
+And in your specific implementation, number acts as the shared progress state while turn acts as the shared ownership state.
